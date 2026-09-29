@@ -1,0 +1,76 @@
+# ---------------------------------------------------------------------------
+# StockGambling - ignore rules
+# ---------------------------------------------------------------------------
+# NOTE: no secrets are ever committed. `.env` files are ignored by design.
+
+# --- Environment / secrets -------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.hypothesis/
+.ipynb_checkpoints/
+
+# --- Node / Next.js --------------------------------------------------------
+node_modules/
+.pnp
+.pnp.js
+.next/
+out/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# --- Data / artifacts ------------------------------------------------------
+# Raw and normalized market data are never committed (licensing + size).
+data/
+!data/.gitkeep
+artifacts/
+models/
+*.pkl
+*.joblib
+*.parquet
+*.feather
+*.onnx
+*.ubj
+
+# --- Editors / OS ----------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ------------------------------------------------------------------
+logs/
+*.log

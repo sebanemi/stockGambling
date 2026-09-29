@@ -1,0 +1,139 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stockgambling"
+version = "0.1.0"
+description = "Research platform for predicting Argentine CEDEAR (BYMA) price direction."
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+license = { text = "MIT" }
+authors = [{ name = "StockGambling contributors" }]
+keywords = ["cedear", "byma", "argentina", "finance", "machine-learning", "time-series"]
+
+dependencies = [
+    # --- Web / API ---
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.0",
+    "python-multipart==0.0.20",
+    "structlog==24.4.0",
+    "httpx==0.28.1",
+    # --- Persistence ---
+    "sqlalchemy==2.0.36",
+    "psycopg[binary]==3.2.3",
+    "alembic==1.14.0",
+    # --- Cache / queue ---
+    "redis==5.2.1",
+    "celery==5.4.0",
+    # --- Numerics / ML (installed up-front so image builds stay reproducible) ---
+    "numpy==2.2.1",
+    "pandas==2.2.3",
+    "scikit-learn==1.6.0",
+    "xgboost==2.1.4",
+    "joblib==1.4.2",
+    "pyarrow==18.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "pytest-cov==6.0.0",
+    "pytest-asyncio==0.25.0",
+    "ruff==0.8.6",
+    "mypy==1.14.1",
+    "pandas-stubs==2.2.3.250527",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+# ---------------------------------------------------------------------------
+# Ruff (lint + format)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["."]
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "N",    # pep8-naming
+    "RUF",  # ruff-specific
+    "S",    # bandit
+    "SIM",  # flake8-simplify
+    "BLE",  # flake8-blind-except
+    "T20",  # flake8-print
+    "PTH",  # flake8-use-pathlib
+    "ARG",  # flake8-unused-arguments
+    "D",    # pydocstyle
+]
+ignore = [
+    "D203",  # incompatible with D211
+    "D213",  # incompatible with D212
+    "D401",  # first line imperative mood - not enforced for docstrings
+    "E501",  # line length is handled by the formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests legitimately pass placeholder credentials and assert on exceptions.
+"tests/*" = ["S101", "S105", "S106", "D103", "D100", "ARG001", "ARG002"]
+"app/workers/tasks/*" = ["D103"]
+"__init__.py" = ["F401"]
+"migrations/*" = ["D103", "E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+# ---------------------------------------------------------------------------
+# Mypy
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.13"
+files = ["app", "tests"]
+strict = true
+warn_unreachable = true
+show_error_codes = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "celery.*",
+    "redis.*",
+    "sklearn.*",
+    "xgboost.*",
+    "pyarrow.*",
+    "pandas_stubs.*",
+]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "unit: fast, dependency-free unit tests",
+    "integration: tests that require a running PostgreSQL and/or Redis",
+    "leakage: tests that assert no future information can reach the model",
+]
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    "error::DeprecationWarning:app.*",
+]

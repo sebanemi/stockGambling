@@ -1,0 +1,16 @@
+# Normalise line endings: the repository stores LF, every platform checks out LF.
+# This keeps Docker builds, linters and diffs byte-identical across OSes.
+* text=auto eol=lf
+
+# Files that must keep platform-specific conventions.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets - never touched.
+*.ico binary
+*.png binary
+*.jpg binary
+*.pdf binary
+*.parquet binary
+*.xgb binary
