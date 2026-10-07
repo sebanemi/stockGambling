@@ -151,8 +151,9 @@ class TestFxAsOf:
     def test_future_fx_is_invisible(self, db_session: Session) -> None:
         """An FX observation dated after D cannot move features at D."""
         inst = _instrument(db_session, symbol="LEAK4")
-        _fx(db_session, date(2026, 3, 9), "1000")
-        _fx(db_session, D, "1100")  # +10% on D, eligible (no lag)
+        # FX windows end at D: two eligible bars give a return, the future one is ignored.
+        _fx(db_session, date(2026, 3, 8), "1000")
+        _fx(db_session, date(2026, 3, 9), "1100")  # +10% on the last eligible bar
         _fx(db_session, date(2026, 3, 11), "5000")  # future: must be ignored
         db_session.commit()
 

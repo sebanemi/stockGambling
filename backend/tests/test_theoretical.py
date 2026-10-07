@@ -35,12 +35,18 @@ pytestmark = pytest.mark.integration
 START = date(2026, 7, 13)
 END = date(2026, 7, 14)
 
+#: The underlying session usable by a prediction at the BYMA close of START:
+#: the one-session lag means the latest eligible underlying date is strictly
+#: before the prediction's own date.
+PREV = date(2026, 7, 12)
+
 # BYMA close: 18:00 ART = 21:00 UTC
 BYMA_CLOSE_INSTANT = datetime(2026, 7, 13, 21, 0, tzinfo=UTC)
 
 # Underlying (NASDAQ) close: 16:00 ET = 20:00 UTC (summer) / 21:00 UTC (winter)
 # For July, NASDAQ is on EDT (UTC-4), so 16:00 ET = 20:00 UTC
 NASDAQ_CLOSE_INSTANT = datetime(2026, 7, 13, 20, 0, tzinfo=UTC)
+PREV_NASDAQ_CLOSE_INSTANT = datetime(2026, 7, 12, 20, 0, tzinfo=UTC)
 
 # FX observation before BYMA close
 FX_INSTANT = datetime(2026, 7, 13, 19, 30, tzinfo=UTC)
@@ -72,14 +78,19 @@ def _local_bar(
 
 
 def _underlying_bar(
-    session: Session, instrument_id: int, market_date: date, *, close: str
+    session: Session,
+    instrument_id: int,
+    market_date: date,
+    *,
+    close: str,
+    timestamp: datetime = NASDAQ_CLOSE_INSTANT,
 ) -> UnderlyingPriceBar:
     """Create an underlying price bar."""
     bar = UnderlyingPriceBar(
         instrument_id=instrument_id,
         symbol="AAPL",
         market_date=market_date,
-        timestamp=NASDAQ_CLOSE_INSTANT,
+        timestamp=timestamp,
         open=Decimal("200"),
         high=Decimal("210"),
         low=Decimal("195"),
@@ -214,7 +225,14 @@ class TestBuildTheoreticalResult:
         """All three inputs present -> theoretical price computed."""
         instrument = _instrument(db_session)
         _local_bar(db_session, instrument.id, START, close="215000")
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        # Lagged underlying session: strictly before the BYMA date.
+        _underlying_bar(
+            db_session,
+            instrument.id,
+            PREV,
+            close="150",
+            timestamp=PREV_NASDAQ_CLOSE_INSTANT,
+        )
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         result = build_theoretical_result(db_session, instrument, BYMA_CLOSE_INSTANT)
@@ -226,6 +244,7 @@ class TestBuildTheoreticalResult:
         assert result.underlying_price_used == Decimal("150")
         assert result.local_price == Decimal("215000")
         assert result.premium_discount == Decimal("13.333333")  # (215000-15000)/15000
+        assert result.underlying_market_date == PREV
 
     def test_missing_ratio_returns_none(self, db_session: Session) -> None:
         """No ratio period covering the date -> None."""
@@ -241,7 +260,13 @@ class TestBuildTheoreticalResult:
             )
         )
 
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        _underlying_bar(
+            db_session,
+            instrument.id,
+            PREV,
+            close="150",
+            timestamp=PREV_NASDAQ_CLOSE_INSTANT,
+        )
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         result = build_theoretical_result(db_session, instrument, BYMA_CLOSE_INSTANT)
@@ -261,7 +286,13 @@ class TestBuildTheoreticalResult:
         """No FX observation -> None."""
         instrument = _instrument(db_session)
         _local_bar(db_session, instrument.id, START, close="215000")
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        _underlying_bar(
+            db_session,
+            instrument.id,
+            PREV,
+            close="150",
+            timestamp=PREV_NASDAQ_CLOSE_INSTANT,
+        )
         # No FX bar added
 
         result = build_theoretical_result(db_session, instrument, BYMA_CLOSE_INSTANT)
@@ -271,9 +302,20 @@ class TestBuildTheoreticalResult:
         """A ratio change mid-series affects only the affected dates."""
         instrument = _instrument(db_session)
 
-        # Add a second ratio period starting 2026-07-14 (10:1 -> 20:1)
+        # Close the open [2026-01-01, None) period at END, then open [END, None).
         from app.models.instrument import InstrumentRatioHistory
 
+        current = db_session.scalar(
+            select(InstrumentRatioHistory).where(
+                InstrumentRatioHistory.instrument_id == instrument.id,
+                InstrumentRatioHistory.effective_to.is_(None),
+            )
+        )
+        assert current is not None
+        current.effective_to = END
+        db_session.flush()
+
+        # Add a second ratio period starting 2026-07-14 (10:1 -> 20:1)
         new_ratio = InstrumentRatioHistory(
             instrument_id=instrument.id,
             ratio=Decimal("20"),  # Changed to 20:1
@@ -285,11 +327,14 @@ class TestBuildTheoreticalResult:
         db_session.add(new_ratio)
         db_session.flush()
 
-        # Bars for both dates
+        # Bars for both dates; underlying sessions lag one day behind each prediction.
         _local_bar(db_session, instrument.id, START, close="215000")
         _local_bar(db_session, instrument.id, END, close="220000")
+        _underlying_bar(
+            db_session, instrument.id, PREV, close="150", timestamp=PREV_NASDAQ_CLOSE_INSTANT
+        )
+        # Eligible underlying session for the END prediction (< 2026-07-14).
         _underlying_bar(db_session, instrument.id, START, close="150")
-        _underlying_bar(db_session, instrument.id, END, close="150")
         _fx_bar(db_session, START, close=Decimal("1000"))
         _fx_bar(db_session, END, close=Decimal("1000"))
 
@@ -314,7 +359,9 @@ class TestRunTheoreticalIngestion:
         """Theoretical bars land in sg_theoretical_price_history."""
         instrument = _instrument(db_session)
         _local_bar(db_session, instrument.id, START, close="215000")
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        _underlying_bar(
+            db_session, instrument.id, PREV, close="150", timestamp=PREV_NASDAQ_CLOSE_INSTANT
+        )
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         report = run_theoretical_ingestion(
@@ -338,7 +385,7 @@ class TestRunTheoreticalIngestion:
         assert stored.underlying_price_used == Decimal("150")
         assert stored.local_price == Decimal("215000")
         assert stored.premium_discount == Decimal("13.333333")
-        assert stored.underlying_market_date == START
+        assert stored.underlying_market_date == PREV
         assert stored.fx_market_date == START
         assert stored.source == "computed"
 
@@ -346,7 +393,9 @@ class TestRunTheoreticalIngestion:
         """The audit row captures job and scope."""
         instrument = _instrument(db_session)
         _local_bar(db_session, instrument.id, START, close="215000")
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        _underlying_bar(
+            db_session, instrument.id, PREV, close="150", timestamp=PREV_NASDAQ_CLOSE_INSTANT
+        )
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         run_theoretical_ingestion(
@@ -366,7 +415,9 @@ class TestRunTheoreticalIngestion:
         """Re-running identical inputs is a zero-count pass."""
         instrument = _instrument(db_session)
         _local_bar(db_session, instrument.id, START, close="215000")
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        _underlying_bar(
+            db_session, instrument.id, PREV, close="150", timestamp=PREV_NASDAQ_CLOSE_INSTANT
+        )
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         run_theoretical_ingestion(
@@ -394,7 +445,9 @@ class TestRunTheoreticalIngestion:
         """A restated underlying close revises one row."""
         instrument = _instrument(db_session)
         _local_bar(db_session, instrument.id, START, close="215000")
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        _underlying_bar(
+            db_session, instrument.id, PREV, close="150", timestamp=PREV_NASDAQ_CLOSE_INSTANT
+        )
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         run_theoretical_ingestion(
@@ -433,7 +486,7 @@ class TestRunTheoreticalIngestion:
         bad.underlying_symbol = None  # Will cause missing input
 
         _local_bar(db_session, good.id, START, close="215000")
-        _underlying_bar(db_session, good.id, START, close="150")
+        _underlying_bar(db_session, good.id, PREV, close="150", timestamp=PREV_NASDAQ_CLOSE_INSTANT)
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         report = run_theoretical_ingestion(
@@ -454,7 +507,9 @@ class TestRefreshInstrumentTheoretical:
         """Returns a tally with insert/update counts."""
         instrument = _instrument(db_session)
         _local_bar(db_session, instrument.id, START, close="215000")
-        _underlying_bar(db_session, instrument.id, START, close="150")
+        _underlying_bar(
+            db_session, instrument.id, PREV, close="150", timestamp=PREV_NASDAQ_CLOSE_INSTANT
+        )
         _fx_bar(db_session, START, close=Decimal("1000"))
 
         tally = refresh_instrument_theoretical(
