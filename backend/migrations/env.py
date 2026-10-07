@@ -20,6 +20,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from app.core.config import get_settings
 from app.db.base import Base
 
+# Importing the models package registers every table on ``Base.metadata``.
+# Without this, ``--autogenerate`` and ``alembic check`` compare against an empty
+# metadata object and wrongly report that the database is up to date.
+import app.models  # noqa: F401  isort: skip
+
 config = context.config
 
 if config.config_file_name is not None:

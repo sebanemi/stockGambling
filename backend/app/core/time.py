@@ -14,6 +14,22 @@ from zoneinfo import ZoneInfo
 #: Argentine local time. Since 2009 Argentina has been on UTC-03:00 with no DST.
 ARGENTINA_TZ = ZoneInfo("America/Argentina/Buenos_Aires")
 
+#: Timezone for each underlying market. Used by the as-of rule and theoretical engine.
+MARKET_TIMEZONES: dict[str, ZoneInfo] = {
+    "NYSE": ZoneInfo("America/New_York"),
+    "NYSE_AMERICAN": ZoneInfo("America/New_York"),
+    "NYSE_ARCA": ZoneInfo("America/New_York"),
+    "NASDAQ_GS": ZoneInfo("America/New_York"),
+    "NASDAQ_GM": ZoneInfo("America/New_York"),
+    "NASDAQ_CM": ZoneInfo("America/New_York"),
+    "CBOE_BZX": ZoneInfo("America/New_York"),
+    "OTC": ZoneInfo("America/New_York"),
+    "B3": ZoneInfo("America/Sao_Paulo"),
+    "XETRA": ZoneInfo("Europe/Berlin"),
+    "LSE": ZoneInfo("Europe/London"),
+    "UNKNOWN": ZoneInfo("UTC"),
+}
+
 #: BYMA continuous trading session (11:30-18:00 ART, historical convention).
 BYMA_SESSION_OPEN = time(11, 30)
 BYMA_SESSION_CLOSE = time(18, 0)

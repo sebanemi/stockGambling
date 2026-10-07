@@ -36,12 +36,21 @@ def test_timezone_is_utc() -> None:
     assert celery_app.conf.enable_utc is True
 
 
+#: Namespaces this project owns. ``system.`` is the health/wiring surface,
+#: ``ingest.`` is the data pipeline and ``feature.`` the feature store; all
+#: are checked so a task cannot land in Celery's default namespace by accident.
+OWNED_NAMESPACES = ("system.", "ingest.", "feature.")
+
+
 def test_tasks_are_namespaced() -> None:
-    """Every StockGambling task lives under the ``system.`` namespace."""
+    """Every StockGambling task lives under a namespace this project owns."""
     names = {name for name in celery_app.tasks if not name.startswith("celery.")}
     assert "system.ping" in names
     assert "system.describe" in names
-    assert all(name.startswith("system.") for name in names)
+    assert "ingest.cedear_metadata" in names
+    assert "ingest.cedear_prices" in names
+    assert "feature.build" in names
+    assert all(name.startswith(OWNED_NAMESPACES) for name in names)
 
 
 @pytest.mark.integration

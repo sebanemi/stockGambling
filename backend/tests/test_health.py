@@ -56,13 +56,13 @@ def test_readiness_is_green_when_dependencies_are_up(client: TestClient) -> None
 
 
 def test_api_discovery_document(client: TestClient, settings: Settings) -> None:
-    """The discovery document advertises the API prefix and docs URL."""
+    """The discovery document advertises the API prefix, docs URL and phase."""
     response = client.get(settings.api_prefix)
     assert response.status_code == 200
     body = response.json()
     assert body["api_prefix"] == "/api/v1"
     assert body["docs_url"] == "/docs"
-    assert body["phase"] == "1-infrastructure"
+    assert body["phase"] == "5-feature-engineering"
 
 
 def test_openapi_schema_is_generated(client: TestClient) -> None:
@@ -72,6 +72,7 @@ def test_openapi_schema_is_generated(client: TestClient) -> None:
     schema = response.json()
     assert "/health/ready" in schema["paths"]
     assert "/api/v1/health/live" in schema["paths"]
+    assert "/api/v1/cedears" in schema["paths"]
 
 
 def test_request_id_is_propagated(client: TestClient) -> None:

@@ -1,9 +1,9 @@
 """Version 1 of the StockGambling HTTP API.
 
-Only infrastructure endpoints are wired up in Phase 1. Domain routes
-(``/cedears``, ``/models``, ``/backtests``, ``/experiments``) are added as the
-corresponding pipeline stages are implemented, without changing this module's
-prefix or the shared response envelope.
+Health and, since Phase 2, the CEDEAR metadata routes are wired up. The
+remaining domain routes (``/models``, ``/backtests``, ``/experiments``) are
+added as the corresponding pipeline stages are implemented, without changing
+this module's prefix or the shared response envelope.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from app import __version__
 from app.api.deps import SettingsDep
-from app.api.v1 import health
+from app.api.v1 import cedears, health
 
 api_router = APIRouter()
 
@@ -43,8 +43,9 @@ def api_info(settings: SettingsDep) -> ApiInfo:
         environment=settings.app_env,
         api_prefix=settings.api_prefix,
         docs_url="/docs" if settings.docs_enabled else None,
-        phase="1-infrastructure",
+        phase="5-feature-engineering",
     )
 
 
 api_router.include_router(health_router, prefix="/health")
+api_router.include_router(cedears.router)

@@ -173,8 +173,20 @@ class ProviderSettings(BaseSettings):
     cedear_metadata_provider: str | None = None
     underlying_provider: str | None = None
     underlying_provider_api_key: str | None = None
+    local_price_provider: str | None = None
     fx_provider: str | None = None
     fx_provider_api_key: str | None = None
+
+    #: A *price* provider is a single vendor, unlike metadata where the union
+    #: is the point. When the value is unset the registry falls back to the
+    #: default implementation rather than running them all.
+
+    #: Default currency pair the FX ingestion refreshes (ARS per unit of the
+    #: other leg).
+    fx_default_pair: str = "USDARS"
+
+    #: How many days of history a backfill job asks each provider for.
+    market_data_backfill_days: int = 60
 
 
 class CelerySettings(BaseSettings):

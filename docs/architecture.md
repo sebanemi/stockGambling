@@ -64,25 +64,28 @@ backend/app/
 │   └── time.py       ARGENTINA_TZ, session bounds, naive-datetime rejection
 ├── db/            SQLAlchemy engine, session factory, declarative Base
 ├── api/           HTTP layer only: routing, validation, serialisation
-├── infra/         Outbound adapters: Redis cache, (Phase 3) HTTP providers
+├── infra/         Outbound adapters: Redis cache
+├── domain/        Project vocabulary: instrument type, program status, ratio formatting
+├── models/        ORM tables: instruments, ratio history, ingestion runs, price history, FX
+├── providers/     Provider contracts, registry and vendor adapters (comafi, cajadevalores, yahoo)
+├── ingestion/     Ingestion services: metadata upsert and price/FX backfills
+├── alignment/     As-of selectors (underlying lag, FX cutoff) - the leakage firewall
 └── workers/       Celery app and task registry
 ```
 
 Dependency direction is strictly inward: `api` and `workers` may import `db`,
-`infra` and `core`. `core` imports nothing from the project. `db` imports only
-`core`. Nothing imports from `api` or `workers`.
+`infra` and `core`. Each layer imports only itself, `core` and the layers below it.
+`core` imports nothing from the project. Nothing imports from `api` or `workers`.
 
-**Phase 2+ directories (planned, not yet created):**
+**Remaining directories (planned, not yet created):**
 
 ```
-app/models/      ORM tables (instruments, ratio history, prices, models, ...)
-app/providers/   CedearDataProvider, UnderlyingDataProvider, FXDataProvider, ...
-app/features/    Feature builders, one module per feature group
-app/theoretical/ underlying x FX / ratio -> theoretical CEDEAR value
-app/models_ml/   PredictionModel interface + Majority, LogisticRegression, XGBoost
-app/validation/  Chronological splits, walk-forward folds
-app/backtesting/ CEDEAR portfolio simulation, costs, benchmarks
-app/registry/    Model registry and experiment tracking
+app/features/      Feature builders, one module per feature group
+app/theoretical/   underlying x FX / ratio -> theoretical CEDEAR value
+app/models_ml/     PredictionModel interface + Majority, LogisticRegression, XGBoost
+app/validation/    Chronological splits, walk-forward folds
+app/backtesting/   CEDEAR portfolio simulation, costs, benchmarks
+app/registry/      Model registry and experiment tracking
 ```
 
 ---
@@ -112,17 +115,23 @@ assert it.
 
 ---
 
-## 4. Data model direction (Phase 2+)
+## 4. Data model
 
-Planned tables, listed so the schema is reviewable before it is written:
+Implemented tables (Phase 2-3), listed with the key constraint each one ships:
 
 | Table                      | Purpose                                                    | Key constraint                                    |
 | -------------------------- | ---------------------------------------------------------- | ------------------------------------------------- |
-| `instruments`              | CEDEAR ⇄ underlying mapping, type, market, currency, ratio | one row per CEDEAR; `cedear_symbol` unique         |
-| `instrument_ratio_history` | Ratio with effective dates and provenance                   | **no overlapping `[effective_from, effective_to)`** per instrument |
-| `local_price_history`      | BYMA OHLCV, local `market_date` + UTC instants              | unique `(instrument_id, market_date)`              |
-| `underlying_price_history` | Underlying OHLCV with **its own** market date/timezone      | unique `(instrument_id, market_date)`              |
-| `fx_history`               | FX series per provider/instrument                           | unique `(pair, provider, market_date)`             |
+| `sg_instruments`           | CEDEAR ⇄ underlying mapping, type, market, currency, ratio, active flag, audit timestamps | one row per CEDEAR; symbol unique |
+| `sg_instrument_ratio_history` | Ratio with effective dates and provenance                  | **no overlapping `[effective_from, effective_to)`** per instrument (exclusion constraint) |
+| `sg_ingestion_runs`        | Per-run audit: job, status, counts, warnings, quarantine    | one row per run                                  |
+| `sg_local_price_history`   | BYMA OHLCV, local `market_date` + UTC instants              | unique `(instrument_id, market_date)`              |
+| `sg_underlying_price_history` | Underlying OHLCV with **its own** market date/timezone      | unique `(instrument_id, market_date)`              |
+| `sg_fx_history`            | FX series per provider and pair                             | unique `(pair, source, market_date)`               |
+
+Planned tables:
+
+| Table                      | Purpose                                                    | Key constraint                                    |
+| -------------------------- | ---------------------------------------------------------- | ------------------------------------------------- |
 | `market_data`              | Indices, sector ETFs, VIX, Merval                           | unique `(symbol, source, timestamp)`               |
 | `features`                 | Materialised feature matrix per version                     | unique `(instrument_id, feature_version, as_of)`   |
 | `models` / `model_runs`    | Registry entries and training runs                          | `model_id` + `model_version` unique                |
@@ -133,11 +142,47 @@ Planned tables, listed so the schema is reviewable before it is written:
 
 Every table carries a `source` column from day one so a new data vendor never requires a
 schema rewrite. Ratio history is a separate table because **the current ratio is not
-necessarily the historical ratio**.
+necessarily the historical ratio**. Price tables are keyed on `market_date` (the *market's* own
+trading day, in the venue's timezone) with a parallel aware-UTC `timestamp`; a re-ingest
+updates a day in place (prices get restated), and a quiet day is absent, not zero.
 
 ---
 
 ## 5. Request and job flows
+
+**Metadata ingestion (Phase 2)**
+
+```
+celery task: ingest.cedear_metadata
+  → resolve the configured CEDEAR providers (union, unless CEDEAR_METADATA_PROVIDER is set)
+  → fetch each source; a failure records a warning (and allows no deactivation)
+  → translate each payload into CedearRecord tuples
+  → reconcile fields across sources: conflicts are quarantined, never guessed
+  → upsert instruments keyed on the symbol; re-ingest is idempotent
+  → open a ratio period when a ratio differs; leave the open period untouched when it does not
+  → deactivate instruments missing from *every* source, above a 0.5 retention floor
+  → write one sg_ingestion_runs row recording counts, warnings and quarantines
+```
+
+**Market-data ingestion (Phase 3)**
+
+```
+celery task: ingest.cedear_prices
+  → for each active instrument (or an explicit symbol list):
+      local set     = LOCAL_PRICE_PROVIDER (Yahoo) -> AAPL.BA, BYMA calendar, ARS
+      underlying set = UNDERLYING_PRICE_PROVIDER (Yahoo) -> AAPL, US calendar
+  → fetch FX (FX_PROVIDER) for FX_DEFAULT_PAIR (USDARS=X)
+  → per-fetch failures become warnings, never a failed run
+  → upsert sg_local_price_history / sg_underlying_price_history keyed on (instrument_id, market_date)
+      (a changed close updates the day in place; a missing day is absent, not zero)
+  → upsert sg_fx_history keyed on (pair, source, market_date)
+  → store tradeable references only: an unknown/missing/marketless underlying is a warning, not a guess
+  → write one sg_ingestion_runs row; the job flushes but the caller owns the commit
+```
+
+Prediction-adjacent reads never go through the providers: `app/alignment/asof.py` reads
+**stored** bars, with the underlying lagged one completed session and FX strictly before
+the prediction instant.
 
 **Prediction request (Phase 9)**
 

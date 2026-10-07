@@ -28,22 +28,24 @@ Everything in this repository is built around that distinction.
 
 ---
 
-## Current status: Phase 1 - Infrastructure
+## Current status: Phase 5 - Feature engineering done
 
 | Phase | Scope                                                   | Status |
 | ----- | ------------------------------------------------------- | ------ |
 | **1** | **Repository, Docker Compose, PostgreSQL, Redis, API, web, health checks** | **Done** |
-| 2    | CEDEAR metadata, instruments, ratio history             | Pending |
-| 3    | Local CEDEAR / underlying / FX market data             | Pending |
-| 4    | Theoretical CEDEAR engine + premium/discount           | Pending |
-| 5    | Feature engineering                                     | Pending |
+| **2** | **CEDEAR metadata, instruments, ratio history**         | **Done** |
+| **3** | **Local CEDEAR / underlying / FX market data**         | **Done** |
+| **4** | **Theoretical CEDEAR engine + premium/discount**       | **Done** |
+| **5** | **Feature engineering (Wilder RSI/ATR, MACD signal, store, features API, feature.build task, leakage suite)** | **Done** |
 | 6    | Baselines: majority, logistic regression, XGBoost      | Pending |
 | 7    | Walk-forward validation + leakage detection             | Pending |
 | 8    | CEDEAR backtesting with transaction costs               | Pending |
 | 9    | Prediction API                                          | Pending |
 | 10   | Full dashboard                                          | Pending |
 
-Only infrastructure endpoints exist today. **No predictions are produced yet.**
+Theoretical prices, premium/discount, versioned feature snapshots and their
+full provenance (ratio, FX, underlying price used) are computed and served
+via API (`/theoretical-price`, `/features`, `/features/snapshots`).
 
 ---
 

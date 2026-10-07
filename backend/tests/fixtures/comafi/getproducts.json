@@ -1,0 +1,320 @@
+{
+  "products": [
+    {
+      "id": 410,
+      "link": "https://www.altaba.com/",
+      "name": "AABA",
+      "description": "<ul>\n <li><strong>NOMBRE: </strong>ALTABA INC***</li>\n <li><strong>Industria o Sector:</strong> Financial</li>\n <li><strong>Mercado de valor subyacente</strong>: none</li>\n <li><strong>Alcance P&uacute;blico Inversor:</strong> Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:</strong> AABA</li>\n <li><strong>Observaciones Programa:</strong>&nbsp;Inhabilitado para emitir y cancelar***</li>\n <li><strong>Frecuencia de pago de dividendo</strong>: None</li>\n</ul>\n",
+      "summary": "ALTABA INC",
+      "section": "Cedear Shares",
+      "tip": "ARDEUT111051",
+      "keys": "Acción ordinaria, ",
+      "character": "3:1\n",
+      "tech": "US0213461017\n",
+      "legal": "",
+      "price": "",
+      "code": "8110",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 363,
+      "link": "https://www.comafi.com.ar/custodiaglobal/363-AAP.product.aspx",
+      "name": "AAP",
+      "description": "<ul>\n <li><strong>NOMBRE: </strong>ADVANCE AUTO PARTS INC</li>\n <li><strong>Industria o Sector: </strong>Financial</li>\n <li><strong>Mercado de valor subyacente: </strong>NYSE</li>\n <li><strong>Alcance P&uacute;blico Inversor: </strong>Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen: </strong>AAP</li>\n <li><strong>Observaciones Programa:</strong> Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo: </strong>Quarter</li>\n</ul>\n",
+      "summary": "ADVANCE AUTO PARTS INC\n",
+      "section": "Cedear Shares",
+      "tip": "AR0402038027",
+      "keys": "Acción ordinaria, ",
+      "character": "14:1\n",
+      "tech": "US00751Y1064\n",
+      "legal": "https://www.shop.advanceautoparts.com/",
+      "price": "500000,0000",
+      "code": "8592",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 267,
+      "link": "https://www.comafi.com.ar/custodiaglobal/267-AAPL.product.aspx",
+      "name": "AAPL",
+      "description": "<ul>\n <li><strong>NOMBRE:</strong> APPLE INC.</li>\n <li><strong>Industria o Sector:</strong> Technology</li>\n <li><strong>Mercado de valor subyacente:</strong> NASDAQ GS</li>\n <li><strong>Alcance P&uacute;blico Inversor: </strong>Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen: </strong>AAPL</li>\n <li><strong>Observaciones Programa:</strong> Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo:</strong> Quarter</li>\n</ul>\n",
+      "summary": "APPLE INC.\n",
+      "section": "Cedear Shares",
+      "tip": "ARDEUT116183",
+      "keys": "Acción ordinaria, ",
+      "character": "20:1\n",
+      "tech": "US0378331005\n",
+      "legal": "https://www.apple.com/",
+      "price": "1799612000,0000",
+      "code": "8445",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 542,
+      "link": "https://www.comafi.com.ar/custodiaglobal/542-ABBV.product.aspx",
+      "name": "ABBV",
+      "description": "<ul>\n <li style=\"margin-left: 20pt;\"><strong>NOMBRE:</strong> ABBVIE INC</li>\n <li style=\"margin-left: 20pt;\"><strong>Industria o Sector:</strong> Consumer</li>\n <li style=\"margin-left: 20pt;\"><strong>Mercado de valor subyacente:</strong> NYSE</li>\n <li style=\"margin-left: 20pt;\"><strong>Alcance P&uacute;blico Inversor:</strong> Calificado y no Calificado</li>\n <li style=\"margin-left: 20pt;\"><strong>Ticker en mercado de origen:</strong> ABBV</li>\n <li style=\"margin-left: 20pt;\"><strong>Observaciones Programa:</strong> Habilitado para emitir y cancelar</li>\n <li style=\"margin-left: 20pt;\"><strong>Frecuencia de pago de dividendo:</strong> Quarter</li>\n</ul>\n",
+      "summary": "ABBVIE INC",
+      "section": "Cedear Shares",
+      "tip": "ARBCOM4603M9",
+      "keys": "Acción ordinaria, ",
+      "character": "10:1\n",
+      "tech": "US00287Y1091\n",
+      "legal": "https://www.abbvie.com/",
+      "price": "8000000,0000",
+      "code": "8528",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 583,
+      "link": "https://www.comafi.com.ar/custodiaglobal/583-ACWI.product.aspx",
+      "name": "ACWI",
+      "description": "<ul>\n <li style=\"margin-left: 36pt;\"><strong>NOMBRE: </strong>iShares MSCI ACWI ETF</li>\n <li style=\"margin-left: 36pt;\"><strong>Industria o Sector:</strong>ETF</li>\n <li style=\"margin-left: 36pt;\"><strong>Mercado de valor subyacente:</strong> NASDAQ GM</li>\n <li style=\"margin-left: 36pt;\"><strong>Alcance P&uacute;blico Inversor:&nbsp;</strong>Calificado y no Calificado</li>\n <li style=\"margin-left: 36pt;\"><strong>Ticker en mercado de origen:&nbsp;</strong>ACWI</li>\n <li style=\"margin-left: 36pt;\"><strong>Observaciones Programa:&nbsp;</strong>Habilitado para emitir y cancelar</li>\n <li style=\"margin-left: 36pt;\"><strong><span style=\"font-size: 10pt; line-height: 107%; font-family: Arial, sans-serif;\">Frecuencia de pago de dividendo:&nbsp;</span></strong><strong><span style=\"font-size: 10pt; line-height: 107%; font-family: Arial, sans-serif; font-weight: normal;\">Semi-Anl</span></strong></li>\n</ul>\n",
+      "summary": "iShares MSCI ACWI ETF",
+      "section": "Cedear ETF",
+      "tip": "AR0219286272 ",
+      "keys": "ETF Share, ",
+      "character": "26:1",
+      "tech": "US4642882579",
+      "legal": "https://www.proshares.com/our-etfs/leveraged-and-inverse/psq",
+      "price": "5500000,0000",
+      "code": "8702",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 592,
+      "link": "https://www.comafi.com.ar/custodiaglobal/592-ASTS.product.aspx",
+      "name": "ASTS",
+      "description": "<ul>\n <li><strong>NOMBRE:&nbsp;</strong>AST SPACEMOBILE INC</li>\n <li><strong>Industria o Sector:</strong>&nbsp;Communications</li>\n <li><strong>Mercado de valor subyacente</strong>: NASDAQ GS</li>\n <li><strong>Alcance P&uacute;blico Inversor:</strong>&nbsp;Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:</strong>&nbsp;ASTS</li>\n <li><strong>Observaciones Programa:</strong>&nbsp;Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo</strong>: None</li>\n</ul>\n",
+      "summary": "AST SPACEMOBILE INC",
+      "section": "Cedear Shares",
+      "tip": "AR0908449421",
+      "keys": "",
+      "character": "15.1",
+      "tech": "US00217D1000",
+      "legal": "www.ast-science.com",
+      "price": "7000000,0000",
+      "code": "8714",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 595,
+      "link": "https://www.comafi.com.ar/custodiaglobal/595-BMNR.product.aspx",
+      "name": "BMNR\n",
+      "description": "<ul>\n <li><strong>NOMBRE:&nbsp;</strong>BITMINE INMERSION TECHNOLOGIES, INC.</li>\n <li><strong>Industria o Sector:&nbsp;</strong>Financial</li>\n <li><strong>Mercado de valor subyacente:&nbsp;</strong>NYSE</li>\n <li><strong>Alcance P&uacute;blico Inversor:&nbsp;</strong>Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:&nbsp;</strong>BMNR</li>\n <li><strong>Observaciones Programa:&nbsp;</strong>Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo:&nbsp;</strong>Annual</li>\n</ul>\n",
+      "summary": "BITMINE INMERSION TECHNOLOGIES, INC.",
+      "section": "Cedear Shares",
+      "tip": "AR0701450691",
+      "keys": "Acción ordinaria, ",
+      "character": "8:1\n",
+      "tech": "US09175A2069\n",
+      "legal": "https://www.bitminetech.io/investor-relations",
+      "price": "3895000,0000",
+      "code": "8717",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 594,
+      "link": "https://www.comafi.com.ar/custodiaglobal/594-ECL.product.aspx",
+      "name": "ECL",
+      "description": "<ul>\n <li><strong>NOMBRE:&nbsp;</strong>ECOLAB INC</li>\n <li><strong>Industria o Sector:</strong>&nbsp;Basic Materials</li>\n <li><strong>Mercado de valor subyacente</strong>: New York</li>\n <li><strong>Alcance P&uacute;blico Inversor:</strong>&nbsp;Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:</strong>&nbsp;ECL</li>\n <li><strong>Observaciones Programa:</strong>&nbsp;Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo</strong>: Quarter</li>\n</ul>\n",
+      "summary": "ECOLAB INC",
+      "section": "Cedear Shares",
+      "tip": "AR0866277863",
+      "keys": "",
+      "character": "56:1",
+      "tech": "US2788651006",
+      "legal": "www.ecolab.com",
+      "price": "3600000,0000",
+      "code": "8716",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 412,
+      "link": "https://www.comafi.com.ar/custodiaglobal/412-GE.product.aspx",
+      "name": "GE",
+      "description": "<ul>\n <li><strong>NOMBRE:</strong> GE AEROSPACE.</li>\n <li><strong>Industria o Sector: </strong>Industrial</li>\n <li><strong>Mercado de valor subyacente:</strong> NYSE</li>\n <li><strong>Alcance P&uacute;blico Inversor:</strong> Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:</strong> GE</li>\n <li><strong>Observaciones Programa:</strong> Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo:</strong> Quarter</li>\n</ul>\n",
+      "summary": "GE AEROSPACE.\n",
+      "section": "Cedear Shares",
+      "tip": "ARDEUT110160",
+      "keys": "Acción ordinaria, ",
+      "character": "8:1\n",
+      "tech": "US3696043013\n",
+      "legal": "https://www.ge.com/",
+      "price": "10000000,0000",
+      "code": "8020",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 585,
+      "link": "https://www.comafi.com.ar/custodiaglobal/585-IWDA-LN.product.aspx",
+      "name": "IWDA LN",
+      "description": "<p><strong>&nbsp; &nbsp; &nbsp;&nbsp;</strong></p>\n\n<ul>\n <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>&nbsp;&nbsp;NOMBRE:</strong>&nbsp;IWDA LN&nbsp;</li>\n <li>&nbsp; &nbsp; &nbsp; &nbsp; <strong>Industria o Sector:&nbsp;</strong>UCITS ETF</li>\n <li><strong>&nbsp; &nbsp; &nbsp; &nbsp; Mercado de valor subyacente:&nbsp;</strong>EUROCLEAR</li>\n <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Alcance P&uacute;blico Inversor:&nbsp;</strong>Calificado y no Calificado</li>\n <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Ticker en mercado de origen:&nbsp;</strong>IWDA LN</li>\n <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Observaciones Programa:&nbsp;</strong>Habilitado para emitir y cancelar</li>\n <li><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Frecuencia de pago de dividendo:&nbsp;</strong>None</li>\n</ul>\n",
+      "summary": "iShares Core MSCI World UCITS ETF",
+      "section": "Cedear ETF",
+      "tip": "AR0352918277",
+      "keys": "ETF, ",
+      "character": "24:1",
+      "tech": "IE00B4L5Y983",
+      "legal": "https://www.blackrock.com/mx/intermediarios/productos/251882/ishares-msci-world-ucits-etf-acc-fund",
+      "price": "3720000,0000",
+      "code": "8704",
+      "categories": [
+        {
+          "category": "Irlanda",
+          "flag": "irlanda.svg"
+        }
+      ]
+    },
+    {
+      "id": 635,
+      "link": "https://www.comafi.com.ar/custodiaglobal/635-LIN.product.aspx",
+      "name": "LIN",
+      "description": "<ul>\n <li><strong>NOMBRE:&nbsp;</strong>LINDE PLC</li>\n <li><strong>Industria o Sector:</strong>&nbsp;Basic Materials</li>\n <li><strong>Mercado de valor subyacente</strong>: Idustrial Gases</li>\n <li><strong>Alcance P&uacute;blico Inversor:</strong>&nbsp;Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:</strong>&nbsp;LIN</li>\n <li><strong>Observaciones Programa:</strong>&nbsp;Inhabilitado para emitir y cancelar***</li>\n <li><strong>Frecuencia de pago de dividendo</strong>: Quarter</li>\n</ul>\n",
+      "summary": "LINDE PLC",
+      "section": "Cedear Shares",
+      "tip": "AR0550890435",
+      "keys": "Accion ordinaria, ",
+      "character": "102:1",
+      "tech": "IE000S9YS762",
+      "legal": "https://www.linde.com/",
+      "price": "4500000,0000",
+      "code": "8753",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 450,
+      "link": "https://www.comafi.com.ar/custodiaglobal/450-NG.product.aspx",
+      "name": "NG",
+      "description": "<ul>\n <li style=\"margin-left: 20pt;\"><strong>NOMBRE:</strong> NOVAGOLD RESOURCES INC.</li>\n <li style=\"margin-left: 20pt;\"><strong>Industria o Sector:</strong> Basic Materials</li>\n <li style=\"margin-left: 20pt;\"><strong>Mercado de valor subyacente</strong>: NYSEAmerican</li>\n <li style=\"margin-left: 20pt;\"><strong>Alcance P&uacute;blico Inversor:</strong> Calificado y no Calificado</li>\n <li style=\"margin-left: 20pt;\"><strong>Ticker en mercado de origen:</strong> NG</li>\n <li style=\"margin-left: 20pt;\"><strong>Observaciones Programa:</strong> Habilitado para emitir y cancelar</li>\n <li style=\"margin-left: 20pt;\"><strong>Frecuencia de pago de dividendo:</strong> None</li>\n</ul>\n",
+      "summary": "NOVAGOLD RESOURCES INC.\n",
+      "section": "Cedear Shares",
+      "tip": "ARBCOM4601N1",
+      "keys": "Acción ordinaria, ",
+      "character": "1 :4\n",
+      "tech": "CA66987E2069\n",
+      "legal": "https://novagold.com/",
+      "price": "2000000,0000",
+      "code": "8482",
+      "categories": [
+        {
+          "category": "Canadá",
+          "flag": "canada.svg"
+        }
+      ]
+    },
+    {
+      "id": 637,
+      "link": "https://www.comafi.com.ar/custodiaglobal/637-NTRA.product.aspx",
+      "name": "NTRA",
+      "description": "<ul>\n <li><strong>NOMBRE: </strong>NATERA INC</li>\n <li><strong>Industria o Sector:</strong>&nbsp;Consumer, Non cyclical</li>\n <li><strong>Mercado de valor subyacente</strong>:Biotechnology</li>\n <li><strong>Alcance P&uacute;blico Inversor:</strong>&nbsp;Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:</strong>&nbsp;NTRA</li>\n <li><strong>Observaciones Programa:</strong>&nbsp;Inhabilitado para emitir y cancelar***</li>\n <li><strong>Frecuencia de pago de dividendo</strong>: None</li>\n</ul>\n\n<p>&nbsp;</p>\n",
+      "summary": "NATERA INC",
+      "section": "Cedear Shares",
+      "tip": "AR0776810878",
+      "keys": "Accion ordinaria, ",
+      "character": "51:1",
+      "tech": "US6323071042",
+      "legal": "https://www.natera.com/",
+      "price": "4500000,0000",
+      "code": "8577",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 638,
+      "link": "https://www.comafi.com.ar/custodiaglobal/638-WDC.product.aspx",
+      "name": "WDC\n",
+      "description": "<ul>\n <li><strong>NOMBRE:&nbsp;</strong>WESTERN DIGITAL CORP</li>\n <li><strong>Industria o Sector:&nbsp;</strong>Technology</li>\n <li><strong>Mercado de valor subyacente:&nbsp;</strong>NASDAQ GS</li>\n <li><strong>Alcance P&uacute;blico Inversor:&nbsp;</strong>Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen:&nbsp;</strong>WDC</li>\n <li><strong>Observaciones Programa:&nbsp;</strong>Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo:&nbsp;</strong>Quarter</li>\n</ul>\n",
+      "summary": "WESTERN DIGITAL CORP",
+      "section": "Cedear Shares",
+      "tip": "AR0307648912",
+      "keys": "Accion ordinaria, ",
+      "character": "92:1",
+      "tech": "US9581021055",
+      "legal": "www.westerndigital.com",
+      "price": "4500000,0000",
+      "code": "8747",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    },
+    {
+      "id": 639,
+      "link": "https://www.comafi.com.ar/custodiaglobal/639-WDC.product.aspx",
+      "name": "WDC",
+      "description": "<ul>\n <li><strong>NOMBRE:&nbsp;</strong>WESTERN DIGITAL CORP</li>\n <li><strong>Industria o Sector:&nbsp;</strong>Financial</li>\n <li><strong>Mercado de valor subyacente:&nbsp;</strong>NYSE</li>\n <li><strong>Alcance P&uacute;blico Inversor:&nbsp;</strong>Calificado y no Calificado</li>\n <li><strong>Ticker en mercado de origen: </strong>MS</li>\n <li><strong>Observaciones Programa:&nbsp;</strong>Habilitado para emitir y cancelar</li>\n <li><strong>Frecuencia de pago de dividendo:&nbsp;</strong>Quarter</li>\n</ul>\n",
+      "summary": "WESTERN DIGITAL CORP",
+      "section": "Cedear Shares",
+      "tip": "",
+      "keys": "Accion ordinaria, ",
+      "character": "",
+      "tech": "",
+      "legal": "",
+      "price": "",
+      "code": "",
+      "categories": [
+        {
+          "category": "Estados Unidos",
+          "flag": "united-states.svg"
+        }
+      ]
+    }
+  ],
+  "t": 364
+}

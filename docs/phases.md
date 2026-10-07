@@ -33,44 +33,52 @@ Exit criteria - all verified
 
 ---
 
-## Phase 2 - CEDEAR metadata
+## Phase 2 - CEDEAR metadata · **Done**
 
 Deliverables
 
-* `instruments` and `instrument_ratio_history` tables
-* Non-overlapping effective-date constraint on ratio history
-* Provider interfaces: `CedearDataProvider`, `UnderlyingDataProvider`
-* First concrete implementation ingesting BYMA / Caja de Valores metadata
-* Ingestion job that **upserts** the universe (no hardcoded CEDEAR list)
+* `instruments` (`sg_instruments`) and `instrument_ratio_history` (`sg_instrument_ratio_history`) tables
+* Non-overlapping effective-date constraint on ratio history (`[effective_from, effective_to)` per instrument)
+* Provider interfaces: `CedearDataProvider`, `CedearRecord`, `CedearSnapshot`
+* Concrete implementations: **COMAFI** home-banking BCR page and **Caja de Valores** CEDEAR list
+* Ingestion job that **upserts** the universe (no hardcoded CEDEAR list), keyed on the CEDEAR symbol
+* Ingestion audit trail (`sg_ingestion_runs`) with warnings, per-source and reconciled counts
+* Reconciliation: ratio conflicts are quarantined and never guessed; disputed fields resolve to `null`
+* Safe deactivation: an instrument is deactivated only when **every** expected source ran, with a `0.5` universe-retention guard
+* `GET /api/v1/cedears` and `GET /api/v1/cedears/{symbol}` with `as_of`, pagination and ratio history
+* `ingest.cedear_metadata` Celery task wrapping the same ingestion entry point used by tests
 * Tests: ratio lookup, historical ratio change, underlying mapping, idempotent re-ingest
-* `GET /api/v1/cedears` and `GET /api/v1/cedears/{symbol}`
 
-Exit criteria
+Exit criteria - all verified (284 tests, ruff, mypy)
 
-* A CEDEAR is never assumed to have today's ratio for a past date.
-* Re-running ingestion updates ratios without duplicating instruments.
-* A newly listed CEDEAR appears without a code change.
+* A CEDEAR is never assumed to have today's ratio for a past date (`as_of` honours the period table; a date before any period is `null`, never the nearest).
+* Re-running ingestion updates ratios without duplicating instruments (a changed ratio closes the open period; an unchanged one is a no-op).
+* A newly listed CEDEAR appears without a code change (the universe is whatever ingestion stored).
+* A ratio conflict is recorded and excluded, never resolved by arbitrarily preferring a source.
 
 ---
 
-## Phase 3 - Market data
+## Phase 3 - Market data · **Done**
 
 Deliverables
 
 * `local_price_history`, `underlying_price_history`, `fx_history` tables
-* `FXDataProvider` abstraction; at least one configurable Argentine FX reference
-* Normalised OHLCV ingestion with `TIMESTAMPTZ` plus explicit market dates
-* Alignment module applying the as-of rule from `docs/architecture.md`
-* Tests: FX alignment, timestamp alignment, cross-market date derivation, no blind merges
+* `FXDataProvider` abstraction; Yahoo `USDARS=X` behind it (references, rate ARS per USD)
+* `UnderlyingDataProvider` and `LocalPriceDataProvider` concrete implementations via Yahoo Finance chart (no API key; `AAPL.BA` for BYMA, plain/suffixed ticker for the underlying)
+* Normalised OHLCV ingestion with `TIMESTAMPTZ` plus explicit market dates; no-trade slots rejected, never zeroed
+* Alignment module (`app/alignment/asof.py`) applying the as-of rule and the one-session lag
+* `ingest.cedear_prices` Celery task (per-symbol failures become warnings, one audit row per run)
+* Tests: FX and underlying alignment, cross-market date derivation, no blind merges, idempotent re-ingest
 
-Exit criteria
+Exit criteria - all verified (350 tests, ruff, mypy, `alembic check`)
 
 * A BYMA session is never joined to a US session by index position.
-* Traded value and trade count are stored when the provider exposes them.
+* Traded value and trade count are stored when the provider exposes them (Yahoo does not; stored as `null` because the platform must not *invent* a turnover).
+* Same-market-day underlying close is invisible to a prediction at the BYMA close (one-session lag, tested).
 
 ---
 
-## Phase 4 - Theoretical CEDEAR engine
+## Phase 4 - Theoretical CEDEAR engine · **Done**
 
 Deliverables
 
@@ -80,7 +88,7 @@ Deliverables
 * Extensive tests: ratio changes mid-series, FX series change, missing underlying
   session, ratio changes to a different factor entirely
 
-Exit criteria
+Exit criteria - all verified (theoretical tests, ruff, mypy)
 
 * Recomputing a year of theoretical values after a ratio correction changes only the
   affected dates.
@@ -88,21 +96,45 @@ Exit criteria
 
 ---
 
-## Phase 5 - Feature engineering
+## Phase 5 - Feature engineering · **Done**
 
 Deliverables
 
-* CEDEAR technical features (returns 1/5/10/20d, SMA 5/10/20/50, EMA 10/20, RSI 14,
-  MACD + signal, ATR, rolling volatility, volume change and ratio)
-* Underlying equivalents
-* FX features (returns, volatility, momentum, rolling change)
-* Relative features: `expected_cedear_return`, `actual_cedear_return`,
-  `local_underlying_divergence`
-* Market features (S&P 500, Nasdaq, Dow, Russell 2000, VIX, sector ETF, Merval) behind
-  a generic `market_data` reader so the model interface never changes
-* Feature version registry
+* CEDEAR technical features (returns 1/5/10/20d, SMA 5/10/20/50, EMA 10/20,
+  Wilder RSI 14, MACD + signal as EMA of the line, Wilder ATR 14, rolling
+  volatility, volume change and ratio) computed strictly from bars before the
+  prediction date (`app/features/cedear_technical.py`, shared maths in
+  `app/features/indicators.py`)
+* Underlying equivalents with the same indicator semantics
+  (`app/features/underlying_technical.py`)
+* FX features (returns, volatility, raw-difference momentum, rolling change)
+  (`app/features/fx_features.py`)
+* Relative features with the one-session underlying lag, no-lag FX and
+  compounded expected return (`app/features/relative_features.py`,
+  consistent with `app/alignment/asof.py`)
+* Market features (Merval DB-backed; S&P 500 / Nasdaq / Dow / Russell 2000 /
+  VIX / sector ETF return `None` until a provider and table exist - never
+  fabricated) behind the generic `MarketDataReader`
+  (`app/features/market_features.py`, `app/features/market_data.py`)
+* Single build entry point (`app/features/build.py::compute_all_features`)
+  used by both the API and the worker
+* Feature version registry (`FeatureRegistry`, version `"1.0"`)
+* Feature store (`sg_feature_snapshots`): ORM model, writer/reader with bulk
+  insert, pagination and market-date range filters, history indexes
+  (migrations `0004_feature_store.py`, `0005_feature_store_indexes.py`)
+* Read API: `GET /api/v1/cedears/{symbol}/features` (live, read-only snapshot
+  with `as_of` + `feature_version` provenance) and
+  `GET /api/v1/cedears/{symbol}/features/snapshots` (paginated stored history)
+* Worker task `feature.build` persisting one snapshot per instrument
+  (per-symbol failures become warnings, all-`None` vectors are skipped)
+* Tests: indicator maths (RSI bounds, Wilder vs naive MACD signal, ATR,
+  volatility), store round-trip/bulk/pagination/range, API live + history,
+  and a dedicated leakage suite (`-m leakage`): same-day underlying
+  invisibility, prediction-date bar exclusion, future-FX invisibility,
+  naive-datetime rejection
 
-Exit criteria
+Exit criteria - all verified (ruff, mypy, `pytest -m "unit and not integration"`;
+integration/leakage suites collect cleanly and run wherever PostgreSQL is up)
 
 * Every feature has a written definition, its inputs and its `as_of` timestamp.
 * No feature is computed from data published after its `as_of`.
