@@ -41,20 +41,19 @@ All 50 feature definitions are registered (cedear_technical, underlying_technica
 
 ---
 
-## 2. Phase 6 — Baseline Models (Not Started)
+## 2. Phase 6 — Baseline Models (Done)
 
-### 2.1 Model Interface — Missing
-- No `app/models/models.py` or `app/domain/models.py` with `PredictionModel` interface (`fit`, `predict`, `predict_proba`, `save`, `load`, `get_metadata`).
-- No `models` table (`sg_models`) or `model_runs` table (`sg_model_runs`).
-- No `experiment` table (`sg_experiments`).
+### 2.1 Model Interface — Complete
+- `app/modeling/base.py` with the `PredictionModel` ABC (`fit`, `predict`, `predict_proba`, `save`, `load`, `get_metadata`).
+- `sg_models` + `sg_model_runs` tables (`app/models/model.py`, migration `0006_model_registry.py`).
+- Experiment records (`sg_experiments`) deferred to Phase 7 walk-forward work.
 
-### 2.2 Baseline Algorithms — Missing
-- No `app/models/baselines.py` or `app/features/baselines.py`.
-- No majority-class baseline, random baseline, logistic regression, or XGBoost model implementations.
-- No model registry module.
+### 2.2 Baseline Algorithms — Complete
+- `app/modeling/baselines.py`: majority-class, seeded random, logistic regression, single-threaded XGBoost, via `ALGORITHMS` + `make_model`.
+- Train-median imputation stored at fit; single-class windows raise honestly.
 
-### 2.3 Serialization / Round-trip Tests — Missing
-- No `tests/test_model_serialization.py`.
+### 2.3 Serialization / Round-trip Tests — Complete
+- `tests/test_models.py`: per-algorithm save/load round-trips reproducing identical predictions; foreign-artifact loads refused.
 
 ---
 
@@ -206,7 +205,7 @@ All 50 feature definitions are registered (cedear_technical, underlying_technica
 | Phase 5 Feature Tests | Complete | DB-backed runs need PostgreSQL (skip cleanly without it) |
 | Phase 5 Feature API | Complete | None |
 | Phase 5 Feature Worker | Complete | None |
-| Phase 6 Baselines | Missing | Model interface, algorithms, registry |
+| Phase 6 Baselines | Complete | Experiment table deferred to Phase 7 |
 | Phase 7 Walk-Forward | Missing | Split utility, folds, metrics, leakage tests |
 | Phase 8 Backtesting | Missing | Portfolio sim, costs, benchmarks, metrics, endpoint |
 | Phase 9 Prediction API | Missing | Prediction endpoint, probability envelope, model/experiment endpoints |

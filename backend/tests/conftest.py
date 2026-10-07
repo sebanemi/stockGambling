@@ -38,6 +38,8 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 #: these between runs so they neither leak state into each other nor depend on
 #: execution order.
 TRUNCATE_ORDER: tuple[str, ...] = (
+    "sg_model_runs",
+    "sg_models",
     "sg_feature_snapshots",
     "sg_theoretical_price_history",
     "sg_ingestion_runs",

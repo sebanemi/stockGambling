@@ -28,7 +28,7 @@ Everything in this repository is built around that distinction.
 
 ---
 
-## Current status: Phase 5 - Feature engineering done
+## Current status: Phase 6 - Baseline models done
 
 | Phase | Scope                                                   | Status |
 | ----- | ------------------------------------------------------- | ------ |
@@ -37,7 +37,7 @@ Everything in this repository is built around that distinction.
 | **3** | **Local CEDEAR / underlying / FX market data**         | **Done** |
 | **4** | **Theoretical CEDEAR engine + premium/discount**       | **Done** |
 | **5** | **Feature engineering (Wilder RSI/ATR, MACD signal, store, features API, feature.build task, leakage suite)** | **Done** |
-| 6    | Baselines: majority, logistic regression, XGBoost      | Pending |
+| **6** | **Baselines: majority, random, logistic regression, XGBoost (`PredictionModel`, registry, dataset builder)** | **Done** |
 | 7    | Walk-forward validation + leakage detection             | Pending |
 | 8    | CEDEAR backtesting with transaction costs               | Pending |
 | 9    | Prediction API                                          | Pending |

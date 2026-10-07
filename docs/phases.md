@@ -141,20 +141,35 @@ integration/leakage suites collect cleanly and run wherever PostgreSQL is up)
 
 ---
 
-## Phase 6 - Baseline models
+## Phase 6 - Baseline models · **Done**
 
 Deliverables
 
-* `PredictionModel` interface: `fit`, `predict`, `predict_proba`, `save`, `load`,
-  `get_metadata`
-* Majority-class baseline, random baseline, logistic regression, XGBoost
-* Model registry (`models`, `model_runs`) and experiment records
-* Serialisation round-trip tests
+* `PredictionModel` interface (`app/modeling/base.py`): `fit`, `predict`,
+  `predict_proba` (two-column `[P(down), P(up)]` rows summing to 1), `save`,
+  `load`, `get_metadata`
+* Four algorithms (`app/modeling/baselines.py`): majority baseline (training
+  majority + empirical distribution), seeded random baseline, L2 logistic
+  regression and single-threaded XGBoost - the learned models impute with
+  *training* medians stored at fit time, and refuse single-class windows
+  instead of inventing a boundary
+* Dataset builder (`app/modeling/datasets.py`): feature snapshots joined to
+  next-session CEDEAR direction labels (flat counts as down; the labelless
+  last session is dropped)
+* Model registry (`sg_models`, `sg_model_runs`, migration
+  `0006_model_registry.py`) with `register_model` / `record_run` /
+  `get_model` / `list_models`
+* Tests (`tests/test_models.py`): per-algorithm contract (shapes, proba
+  envelope, argmax agreement), seeded determinism, unfitted-use refusal,
+  save/load round-trip reproducing identical predictions, registry and
+  dataset integration tests
 
-Exit criteria
+Exit criteria - all verified (ruff, mypy strict, 424 tests with PostgreSQL +
+Redis in Docker, `alembic check` clean)
 
-* The backtesting engine and the API are indifferent to the algorithm.
-* A model can be loaded in a fresh process and reproduce identical predictions.
+* The backtesting engine and the API are indifferent to the algorithm (they
+  only see `PredictionModel`).
+* A model loaded from disk reproduces identical predictions.
 
 ---
 
