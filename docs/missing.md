@@ -57,25 +57,21 @@ All 50 feature definitions are registered (cedear_technical, underlying_technica
 
 ---
 
-## 3. Phase 7 — Walk-Forward Evaluation (Not Started)
+## 3. Phase 7 — Walk-Forward Evaluation (Done)
 
-### 3.1 Chronological Split Utility — Missing
-- No `shuffle=True` lint check (would require a custom ruff plugin or pytest plugin). Not implemented.
-- No `app/evaluation/splits.py` or similar module for chronological splits.
+### 3.1 Chronological Split Utility — Complete
+- `app/evaluation/splits.py`: expanding-window folds, no shuffle parameter by design; `TestNoShuffledSplits` fails the build on `shuffle=True` under `app/`.
 
-### 3.2 Walk-Forward Folds — Missing
-- No `walk_forward` function or module.
-- No `tests/test_walk_forward.py`.
+### 3.2 Walk-Forward Folds — Complete
+- `run_walk_forward` with a per-fold model factory; `verify_test_coverage` enforces exactly-once tail evaluation.
+- `tests/test_walk_forward.py`: chronology, data-driven fold counts, validation errors, runner behaviour.
 
-### 3.3 Classification Metrics — Missing
-- No `app/evaluation/metrics.py` or `app/metrics/`.
-- No accuracy, balanced accuracy, precision, recall, F1, ROC-AUC, log loss, Brier score implementations.
-- No `tests/test_metrics.py`.
+### 3.3 Classification Metrics — Complete
+- `app/evaluation/metrics.py`: accuracy, balanced accuracy, precision, recall, F1, ROC-AUC (`None` when undefined), log loss, Brier score, majority reference, cross-fold aggregation.
 
-### 3.4 Leakage Tests — Missing
-- No `tests/test_leakage.py` (zero tests use `-m leakage`).
-- No leakage detection module (`app/leakage/` or `app/evaluation/leakage.py`).
-- No tests for future underlying prices, future FX, future volume, future news, revised fundamentals, future conversion ratios, timezone errors, dataset-wide normalisation, or shuffled splits.
+### 3.4 Leakage Tests — Complete
+- `tests/test_leakage.py` (`-m leakage`): future underlying/FX/volume, future conversion ratios, timezone errors + tz-expression invariance, train-only statistics, shuffled-split ban.
+- Not covered (no such inputs exist yet): future news, revised fundamentals — no news/fundamentals pipeline exists to leak from.
 
 ---
 
@@ -206,7 +202,7 @@ All 50 feature definitions are registered (cedear_technical, underlying_technica
 | Phase 5 Feature API | Complete | None |
 | Phase 5 Feature Worker | Complete | None |
 | Phase 6 Baselines | Complete | Experiment table deferred to Phase 7 |
-| Phase 7 Walk-Forward | Missing | Split utility, folds, metrics, leakage tests |
+| Phase 7 Walk-Forward | Complete | News/fundamentals leaks N/A (no such inputs) |
 | Phase 8 Backtesting | Missing | Portfolio sim, costs, benchmarks, metrics, endpoint |
 | Phase 9 Prediction API | Missing | Prediction endpoint, probability envelope, model/experiment endpoints |
 | Phase 10 Frontend | Missing | All feature/model/backtest UI pages |

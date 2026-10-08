@@ -173,21 +173,32 @@ Redis in Docker, `alembic check` clean)
 
 ---
 
-## Phase 7 - Walk-forward evaluation
+## Phase 7 - Walk-forward evaluation · **Done**
 
 Deliverables
 
-* Chronological split utility - `shuffle=True` is banned and linted against
-* Walk-forward folds driven by the actual data range, not hardcoded years
-* Classification metrics: accuracy, balanced accuracy, precision, recall, F1, ROC-AUC,
-  log loss, Brier score, and the majority baseline for reference
-* Dedicated leakage test module (`-m leakage`): future underlying prices, future FX,
-  future volume, future news, revised fundamentals, future conversion ratios, timezone
-  errors, dataset-wide normalisation, shuffled splits
+* Chronological split utility (`app/evaluation/splits.py`): expanding-window
+  folds driven by the actual sample size (no hardcoded years); `shuffle`
+  exists nowhere by design and the leakage suite fails the build if
+  shuffling is ever enabled under `app/`
+* Exactly-once test coverage verifier (`verify_test_coverage`): test windows
+  partition the tail contiguously with no overlap
+* Classification metrics (`app/evaluation/metrics.py`): accuracy, balanced
+  accuracy, precision, recall, F1, ROC-AUC (`None` on single-class windows),
+  log loss, Brier score, plus the majority baseline scored on every split
+* Walk-forward runner (`app/evaluation/walk_forward.py`): a fresh model
+  instance per fold (no fitted state crosses windows), predictions on
+  untouched test windows, per-fold and aggregated reports
+* Leakage suite (`-m leakage`, `tests/test_leakage.py`): future underlying
+  prices, future FX, future volume, future conversion ratios (history
+  unchanged by later ratio rows), timezone errors and instant-expression
+  invariance, train-only imputation statistics, shuffled-split ban
 
-Exit criteria
+Exit criteria - all verified (ruff, mypy strict, 448 tests with PostgreSQL +
+Redis in Docker, `alembic check` clean)
 
-* The test period is evaluated exactly once per model.
+* The test period is evaluated exactly once per model (`verify_test_coverage`
+  enforces it in the runner and in tests).
 * A model that leaks fails the leakage suite.
 
 ---

@@ -62,7 +62,7 @@ def test_api_discovery_document(client: TestClient, settings: Settings) -> None:
     body = response.json()
     assert body["api_prefix"] == "/api/v1"
     assert body["docs_url"] == "/docs"
-    assert body["phase"] == "6-baseline-models"
+    assert body["phase"] == "7-walk-forward"
 
 
 def test_openapi_schema_is_generated(client: TestClient) -> None:

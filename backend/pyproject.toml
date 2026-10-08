@@ -90,6 +90,7 @@ ignore = [
 "tests/*" = ["S101", "S105", "S106", "D103", "D100", "ARG001", "ARG002", "N806"]
 "app/workers/tasks/*" = ["D103"]
 "app/modeling/*" = ["N803"]
+"app/evaluation/*" = ["N803"]
 "__init__.py" = ["F401"]
 "migrations/*" = ["D103", "E402"]
 "app/features/*" = ["ARG001", "ARG002"]

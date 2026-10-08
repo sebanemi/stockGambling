@@ -43,7 +43,7 @@ def api_info(settings: SettingsDep) -> ApiInfo:
         environment=settings.app_env,
         api_prefix=settings.api_prefix,
         docs_url="/docs" if settings.docs_enabled else None,
-        phase="6-baseline-models",
+        phase="7-walk-forward",
     )
 
 

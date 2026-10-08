@@ -28,7 +28,7 @@ Everything in this repository is built around that distinction.
 
 ---
 
-## Current status: Phase 6 - Baseline models done
+## Current status: Phase 7 - Walk-forward evaluation done
 
 | Phase | Scope                                                   | Status |
 | ----- | ------------------------------------------------------- | ------ |
@@ -38,7 +38,7 @@ Everything in this repository is built around that distinction.
 | **4** | **Theoretical CEDEAR engine + premium/discount**       | **Done** |
 | **5** | **Feature engineering (Wilder RSI/ATR, MACD signal, store, features API, feature.build task, leakage suite)** | **Done** |
 | **6** | **Baselines: majority, random, logistic regression, XGBoost (`PredictionModel`, registry, dataset builder)** | **Done** |
-| 7    | Walk-forward validation + leakage detection             | Pending |
+| **7** | **Walk-forward evaluation (chronological folds, metrics, leakage suite)** | **Done** |
 | 8    | CEDEAR backtesting with transaction costs               | Pending |
 | 9    | Prediction API                                          | Pending |
 | 10   | Full dashboard                                          | Pending |
