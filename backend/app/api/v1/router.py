@@ -1,9 +1,11 @@
 """Version 1 of the StockGambling HTTP API.
 
-Health and, since Phase 2, the CEDEAR metadata routes are wired up. The
-remaining domain routes (``/models``, ``/backtests``, ``/experiments``) are
-added as the corresponding pipeline stages are implemented, without changing
-this module's prefix or the shared response envelope.
+Read routers serve stored data only (CEDEAR metadata, price histories,
+theoretical values, features, models, experiments); the prediction router
+serves probabilities from registered models without fitting anything; the
+backtest router simulates over stored bars and persists the run. Every
+router shares the pagination envelope and error shapes from
+:mod:`app.api.v1.common`.
 """
 
 from __future__ import annotations
@@ -13,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from app import __version__
 from app.api.deps import SettingsDep
-from app.api.v1 import cedears, health
+from app.api.v1 import backtests, cedears, experiments, health, models, predictions, prices
 
 api_router = APIRouter()
 
@@ -43,9 +45,14 @@ def api_info(settings: SettingsDep) -> ApiInfo:
         environment=settings.app_env,
         api_prefix=settings.api_prefix,
         docs_url="/docs" if settings.docs_enabled else None,
-        phase="7-walk-forward",
+        phase="9-prediction-api",
     )
 
 
 api_router.include_router(health_router, prefix="/health")
 api_router.include_router(cedears.router)
+api_router.include_router(prices.router)
+api_router.include_router(predictions.router)
+api_router.include_router(models.router)
+api_router.include_router(backtests.router)
+api_router.include_router(experiments.router)

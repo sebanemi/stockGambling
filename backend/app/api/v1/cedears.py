@@ -37,6 +37,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import SessionDep
+from app.api.v1.common import MAX_PAGE_SIZE, resolve_instrument
 from app.core.time import ensure_utc, to_market_date, utc_now
 from app.domain.vocabulary import format_ratio
 from app.features.build import compute_all_features, feature_version
@@ -50,8 +51,6 @@ from app.models.instrument import Instrument, InstrumentRatioHistory
 from app.models.theoretical import TheoreticalPriceBar
 
 router = APIRouter(prefix="/cedears", tags=["cedears"])
-
-MAX_PAGE_SIZE = 200
 
 
 def _default_as_of() -> date:
@@ -448,19 +447,8 @@ def get_theoretical_price_history(
 
 
 def _resolve_instrument(session: Session, symbol: str) -> Instrument:
-    """Load an instrument by BYMA ticker or raise 404."""
-    normalised = symbol.strip().upper()
-    instrument = session.scalar(select(Instrument).where(Instrument.symbol == normalised))
-    if instrument is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "error": "instrument_not_found",
-                "symbol": normalised,
-                "message": f"{normalised} is not in the stored CEDEAR universe.",
-            },
-        )
-    return instrument
+    """Load an instrument by BYMA ticker or raise 404 (shared helper)."""
+    return resolve_instrument(session, symbol)
 
 
 @router.get(
