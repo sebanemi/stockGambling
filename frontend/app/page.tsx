@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getApiInfo, getReadiness, PUBLIC_API_URL } from "@/lib/api";
+import { Card } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -34,14 +35,15 @@ function StatusBadge({ status }: { status: Badge }) {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function QuickLink({ href, title, body }: { href: string; title: string; body: string }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white/70 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
-      <h2 className="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-        {title}
-      </h2>
-      {children}
-    </section>
+    <Link
+      href={href}
+      className="block rounded-xl border border-slate-200 bg-white/70 p-5 shadow-sm hover:border-sky-400 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-sky-600"
+    >
+      <span className="font-semibold text-sky-600 dark:text-sky-400">{title}</span>
+      <span className="mt-1 block text-sm text-slate-600 dark:text-slate-400">{body}</span>
+    </Link>
   );
 }
 
@@ -59,10 +61,24 @@ export default async function HomePage() {
           USD/ARS rate, the conversion ratio and local market behaviour.
         </p>
         <p className="text-sm text-slate-500 dark:text-slate-500">
-          <strong>Phase 1 &mdash; infrastructure.</strong> The data and model pipeline is not wired
-          up yet; no predictions are shown on this page.
+          Research dashboard: search the CEDEAR universe, inspect actual vs theoretical prices,
+          read next-session probabilities from registered models, and compare backtests against
+          their benchmarks.
         </p>
       </header>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <QuickLink
+          href="/cedears"
+          title="Explore CEDEARs →"
+          body="Search instruments, see ratio history, multi-market panels and prediction probabilities."
+        />
+        <QuickLink
+          href="/backtests"
+          title="Backtests →"
+          body="Strategy equity vs buy-and-hold, metrics and closed trades for persisted runs."
+        />
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Card title="API service">

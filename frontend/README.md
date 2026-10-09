@@ -2,15 +2,23 @@
 
 Next.js dashboard for the StockGambling CEDEAR research platform.
 
-## What it does today (Phase 1)
+## What it does (Phase 10)
 
-* Infrastructure status page: API service/version/environment, plus live readiness for
-  PostgreSQL and Redis, with per-dependency latency.
-* The canonical pipeline with its phase numbers, so the current scope is always visible.
-* `/api/health` route handler that mirrors upstream readiness and returns `503` when the
-  API is degraded. This is also the container healthcheck target.
+* Infrastructure status plus dashboard entry points on `/`.
+* `/cedears`: search of the stored CEDEAR universe (empty query browses it).
+* `/cedears/[symbol]`: instrument panel (underlying, ratio, program status),
+  actual-vs-theoretical chart with premium/discount, three-market small multiples
+  (each series on its own market calendar - never overlaid), a prediction panel
+  with a horizon selector (1 day to 2 years) served from the registered
+  `(name, horizon)` artifact, registered models with walk-forward aggregates and
+  one-sided-window flags, and the symbol's backtests vs buy-and-hold.
+* `/backtests` and `/backtests/[id]`: persisted runs with equity-vs-benchmark
+  charts, metric tables and closed round-trip trades.
+* `/api/health` route handler that mirrors upstream readiness and returns `503`
+  when the API is degraded. This is also the container healthcheck target.
 
-No predictions, charts or CEDEAR data are rendered yet - those arrive in Phase 10.
+Charts are dependency-free SVG. Predictions are shown as probabilities with the
+weak-signal framing, never as certainties.
 
 ## Environment
 
