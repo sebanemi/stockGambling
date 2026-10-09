@@ -157,6 +157,11 @@ def run_metadata_ingestion(
     try:
         for item in universe.instruments:
             _upsert_instrument(session, item.record, counters)
+        # Newly added instruments must be visible to the ratio step below.
+        # Production sessions run with autoflush=False, so without this flush
+        # a first ingest would upsert the universe and silently open zero
+        # ratio periods.
+        session.flush()
         _apply_ratio_changes(session, universe, effective_date, counters)
 
         if missing:

@@ -7,24 +7,37 @@ the rules cannot be relaxed after the results are known.
 
 ## 1. Prediction target
 
-The first target is **direction**, not price.
+The target is **direction**, not price, over an explicit session horizon `H`:
 
 ```
-y(t) = 1  if  CEDEAR_Close(t+1) > CEDEAR_Close(t)
+y(t) = 1  if  CEDEAR_Close(t+H) > CEDEAR_Close(t)
 y(t) = 0  otherwise
 ```
 
-* `t` and `t+1` are **consecutive relevant Argentine trading sessions**.
-* Horizon is explicit everywhere: model id, registry entry, prediction payload, and
-  backtest. The first horizon is `1d`; `5d`, `20d` and intraday are supported by the
-  architecture and not by the MVP.
-* The prediction is made **at the BYMA close of `t`**, using only information available at
-  that instant.
+* `t` and `t+H` are **stored sessions** `H` apart, counted in sessions, never
+  calendar days. Weekends and holidays carry no information.
+* Served horizons: `1d` (1), `1w` (5), `1m` (21), `3m` (63), `6m` (126),
+  `1y` (252), `2y` (504) sessions.
+* Horizon is explicit everywhere: registry entry (`sg_models.horizon`), model
+  artifact name, prediction payload, and backtest holding period. One row
+  serves exactly one horizon; a 1d model never answers a 1w question.
+* The prediction is made **at the BYMA close of `t`**, using only information
+  available at that instant.
 
 ### Ties
 
-`>` (strictly greater) defines the positive class. A flat session is a `0`. Class imbalance
-from flat sessions must be reported, not hidden.
+`>` (strictly greater) defines the positive class. A flat window is a `0`.
+Class imbalance must be reported, not hidden - including the degenerate case
+below.
+
+### Degenerate windows (learned the hard way, October 2026)
+
+On real data, long-horizon test windows in a sustained trend are
+single-class (e.g. 126/126 up). A model predicting the majority then scores a
+perfect 1.0 that is the trend, not skill - and the majority baseline scores
+it too. Every run therefore records `test_up_rate` and the walk-forward
+aggregate (`wf_balanced_accuracy`) next to the single-window score, and the
+dashboard flags one-sided test windows as trend, not skill.
 
 ---
 
@@ -135,6 +148,11 @@ train 2019-2024  ->  test     2025   (evaluated once)
 * Hyperparameters are chosen on validation folds. The test fold is opened once.
 * Fold definitions, feature version and data period are written to the experiment record
   so the run is reproducible.
+* Fold geometry scales with the horizon (`app/train.py::fold_geometry`):
+  the test window holds at least one full horizon (`max(63, H)` sessions) and
+  training at least four (`max(252, 4H)`), so every window means the same thing
+  at every horizon. The serving artifact fits on everything before the most
+  recent window; that window is evaluated once.
 
 ### Metrics
 
@@ -154,6 +172,11 @@ The strategy trades the **CEDEAR in ARS**.
 Included: initial capital, position sizing, entry and exit prices, available cash,
 portfolio value, **transaction costs** and **slippage** (configurable, non-zero by
 default), and the resulting equity curve.
+
+Signals are per holding-period epoch: a signal decided at an epoch boundary
+is held for `H` sessions, so a 1w model trades the 5-session view it was
+trained on. `H = 1` is the session-by-session simulation. Epoch boundaries
+are the only decision points; mid-epoch bars only mark to market.
 
 Benchmarks, always reported:
 

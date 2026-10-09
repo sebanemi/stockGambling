@@ -14,7 +14,7 @@ from decimal import Decimal
 from itertools import pairwise
 
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import Engine, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -371,6 +371,33 @@ class TestRatioPeriods:
         rows = periods(db_session, "AAPL")
         for earlier, later in pairwise(rows):
             assert earlier.effective_to == later.effective_from
+
+
+class TestProductionSessionSemantics:
+    """The worker path (autoflush disabled) must behave like the tests."""
+
+    def test_first_ingest_opens_periods_without_autoflush(
+        self, engine: Engine, db_session: Session
+    ) -> None:
+        """A first ingest through a production-like session opens ratio periods.
+
+        Regression test: without an explicit flush between the upsert loop and
+        the ratio step, newly created instruments were invisible to the ratio
+        lookup and a first ingest silently opened zero periods.
+        """
+        session = Session(engine, autoflush=False, expire_on_commit=False)
+        try:
+            report = run_metadata_ingestion(
+                session,
+                [snapshot("comafi", [record("FLUSH", ratio=Decimal(60))])],
+                effective_date=DAY_ONE,
+                expected_providers=["comafi"],
+            )
+            session.commit()
+            assert report.ratios_inserted == 1
+            assert open_period(db_session, "FLUSH").ratio == Decimal(60)
+        finally:
+            session.close()
 
 
 class TestRatioConstraints:

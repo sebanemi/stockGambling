@@ -203,58 +203,91 @@ Redis in Docker, `alembic check` clean)
 
 ---
 
-## Phase 8 - CEDEAR backtesting
+## Phase 8 - CEDEAR backtesting · **Done**
 
 Deliverables
 
-* Portfolio simulation on the **CEDEAR in ARS**, not the underlying
-* Configurable transaction costs and slippage, non-zero by default
-* Position sizing, available cash, entry/exit prices, portfolio value curve
-* Benchmarks: buy-and-hold CEDEAR, cash / no-trade, optional underlying-equivalent
-* Metrics: total and annualised return, volatility, Sharpe, max drawdown, win rate,
-  trade count, average trade, profit factor, total costs
-* ARS and USD-adjusted returns reported separately
+* Long/flat CEDEAR portfolio simulation in ARS (`app/backtesting/portfolio.py`:
+  `run_backtest`, `signals_from_probas`, `BacktestResult`, `Trade`) - the
+  signal at close `i` holds over `[close[i], close[i+1]]`, no shorting
+* Proportional cost model, non-zero by default (`app/backtesting/costs.py`:
+  `BacktestCosts` with 0.5 % commission + 0.1 % slippage per fill)
+* Benchmarks sharing the same entry maths (`app/backtesting/benchmarks.py`:
+  buy-and-hold CEDEAR, cash, underlying-equivalent)
+* Metrics scored separately per currency (`app/backtesting/metrics.py`:
+  total/annualised return, volatility, Sharpe, max drawdown, win rate,
+  trade count, average trade, profit factor, total costs; `to_usd_curve`
+  converts ARS equity to USD for the side-by-side USD accounting)
+* Tests (`tests/test_backtesting.py`, 25 unit tests)
 
-Exit criteria
+Exit criteria - all verified (ruff, mypy strict, `pytest -m unit`)
 
-* Results are indistinguishable from the benchmark when the model always predicts one
-  class (a deliberate null-model test).
-* A strategy that cannot cover transaction costs shows a loss.
+* An always-long run is indistinguishable from buy-and-hold; an always-flat
+  run from cash (null-model tests).
+* A strategy whose gross edge is smaller than round-trip costs shows a loss
+  (churn and small-edge tests).
 
 ---
 
-## Phase 9 - Prediction API
+## Phase 9 - Prediction API · **Done**
 
 Deliverables
 
-* `GET /api/v1/cedears/{symbol}/history|underlying|fx|theoretical-price|features|prediction`
-* `GET /api/v1/models`, `GET /api/v1/models/{model_id}`
-* `POST /api/v1/backtests`, `GET /api/v1/backtests/{backtest_id}`
-* `GET /api/v1/experiments`
-* Consistent response envelope, pagination, and error shapes
+* Price-history reads (`app/api/v1/prices.py`): `GET
+  /api/v1/cedears/{symbol}/history|underlying|fx` - stored BYMA bars,
+  underlying bars with their own market dates, and the global FX reference
+  series (all paginated, nulls intact, unknown tickers 404)
+* Prediction (`app/api/v1/predictions.py`): `GET
+  /api/v1/cedears/{symbol}/prediction?model=<name>&as_of=<instant>` serves
+  `probability_up`/`probability_down` from the registered artifact (never
+  fitted at request time), with model, feature-version and close/ratio
+  provenance; unknown model 404, missing artifact 409, malformed `as_of` 422
+* Registry reads (`app/api/v1/models.py`): `GET /api/v1/models` (filterable,
+  paginated) and `GET /api/v1/models/{model_id}` with training runs
+* Backtests (`app/api/v1/backtests.py`): `POST /api/v1/backtests` simulates
+  explicit signals over stored bars (bounded synchronous window, persisted
+  to `sg_backtests` via migration `0007_backtests.py`), `GET
+  /api/v1/backtests` lists and `GET /api/v1/backtests/{backtest_id}` serves
+  the stored run verbatim
+* Experiments (`app/api/v1/experiments.py`): `GET /api/v1/experiments` pages
+  the training-run audit trail as experiment records
+* Shared envelope (`app/api/v1/common.py`): one pagination shape and one
+  `instrument_not_found` shape across all routers
+* Tests (`tests/test_api_phase9.py`, 22 integration tests)
 
-Exit criteria
+Exit criteria - all verified (ruff, mypy strict, pytest with PostgreSQL +
+Redis in Docker, `alembic check` clean)
 
-* Every response value traces to stored data. Nothing is fabricated or defaulted.
-* `probability_up + probability_down == 1`.
+* Every response value traces to stored rows or the persisted run; unknown
+  or missing inputs refuse (404/409/422) instead of defaulting.
+* `probability_up + probability_down == 1` (asserted on a live response).
 
 ---
 
-## Phase 10 - Frontend
+## Phase 10 - Frontend · **Done**
 
 Deliverables
 
-* CEDEAR search
-* Instrument panel: CEDEAR, underlying, both markets, current ratio
-* Actual vs theoretical price chart with a premium/discount panel
-* Multi-market chart (CEDEAR / underlying / USD/ARS) with honest timestamp alignment
-* Prediction panel: up/down probability, model, version, horizon, recent performance
-* Backtest results with benchmark comparison
+* CEDEAR search (`/cedears`): server-rendered results from the stored universe
+* Instrument panel (`/cedears/[symbol]`): underlying, markets, current ratio,
+  program status; actual-vs-theoretical chart (shared BYMA axis) with a
+  premium/discount panel; three-market small multiples with per-market date
+  axes; probability-only prediction panel with model selector; registered
+  models with latest training runs; the symbol's backtests vs buy-and-hold
+* Backtests (`/backtests`, `/backtests/[id]`): persisted runs with
+  equity-vs-benchmark charts, strategy/benchmark metric tables and closed
+  round-trip trades
+* Dependency-free SVG charts (`components/charts.tsx`); typed backend client
+  (`lib/api.ts`) with `{ ok, data, error }` honest-unavailable states
 
-Exit criteria
+Exit criteria - all verified (`npm run lint`, `npm run typecheck`,
+`npm run build`, plus a smoke run against seeded data)
 
-* Predictions are shown as probabilities, never as certainties.
-* Charts never imply two different market sessions were simultaneous.
+* Predictions render as probabilities with weak-signal framing and the
+  not-investment-advice footer - never as certainties.
+* Cross-market series render as small multiples with their own market-date
+  axes; only same-calendar series (actual vs theoretical, strategy vs
+  buy-and-hold) share an axis, labelled as such.
 
 ---
 
@@ -264,3 +297,25 @@ Neural networks, news sentiment, LLM predictions, live trading, automatic tradin
 options, portfolio optimisation, intraday prediction. The architecture reserves room for
 all of them; none of them may be implemented before the core pipeline is scientifically
 valid.
+
+---
+
+## Beyond the MVP - real data and multi-horizon models
+
+Done after the ten phases, on the same scientific rules:
+
+* Real CEDEAR universe (422 instruments from Comafi + Caja de Valores, with
+  real conversion ratios), real Yahoo prices (local, underlying, USD/ARS),
+  one model per symbol and horizon (`app/bootstrap.py`, `app/train.py`).
+* Seven served horizons (`1d` to `2y`, sessions not calendar days), one
+  registry row per `(name, horizon)`, epoch holding in backtests, horizon
+  selector on the dashboard (`app/modeling/horizons.py`, migration
+  `0008_model_horizon`).
+* One-command startup: `.\demo.ps1` (Windows) or `make demo` (Unix) builds
+  the stack, migrates, bootstraps data, trains and seeds backtests.
+* Cold-start honesty: published ratios are current-only, so historical
+  theoretical values are `null` by design (never backfilled with today's
+  ratio); ratio-dependent features degrade to `None` until history exists.
+* Degenerate windows are reported: long-horizon scores of 1.0 on one-sided
+  test windows are the trend, not skill (`test_up_rate`, `wf_*` aggregates,
+  dashboard flags).

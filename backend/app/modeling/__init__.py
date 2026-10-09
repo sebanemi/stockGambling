@@ -6,10 +6,13 @@ The package has three layers:
   algorithm implements, so backtests and the API never branch on it.
 * :mod:`app.modeling.baselines` - majority, random, logistic regression and
   XGBoost implementations with joblib serialisation.
-* :mod:`app.modeling.datasets` - feature-matrix + next-session-label assembly
+* :mod:`app.modeling.datasets` - feature-matrix + horizon-label assembly
   from the feature store (labels are future by construction; chronological
   discipline lives in the Phase 7 splitter).
-* :mod:`app.modeling.registry` - ``sg_models`` / ``sg_model_runs`` persistence.
+* :mod:`app.modeling.horizons` - the served forecast horizons (1d to 2y) in
+  sessions, with validation.
+* :mod:`app.modeling.registry` - ``sg_models`` / ``sg_model_runs`` persistence,
+  one row per (name, horizon).
 """
 
 from __future__ import annotations
@@ -24,10 +27,13 @@ from app.modeling.baselines import (
     make_model,
 )
 from app.modeling.datasets import FeatureDataset, build_dataset
+from app.modeling.horizons import DEFAULT_HORIZON, HORIZONS, describe_horizon, horizon_sessions
 from app.modeling.registry import get_model, list_models, record_run, register_model
 
 __all__ = [
     "ALGORITHMS",
+    "DEFAULT_HORIZON",
+    "HORIZONS",
     "FeatureDataset",
     "LogisticRegressionModel",
     "MajorityBaseline",
@@ -35,7 +41,9 @@ __all__ = [
     "RandomBaseline",
     "XGBoostModel",
     "build_dataset",
+    "describe_horizon",
     "get_model",
+    "horizon_sessions",
     "list_models",
     "make_model",
     "record_run",

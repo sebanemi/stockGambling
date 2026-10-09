@@ -128,5 +128,17 @@ dev-web: ## Run the Next.js dev server (host)
 migrate: ## Apply all Alembic migrations
 	cd $(BACKEND) && .venv/bin/alembic upgrade head
 
+demo: ## One-command demo: stack + real data + trained models
+	$(COMPOSE) up -d --build
+	for i in $$(seq 1 60); do \
+		if curl -sf http://localhost:8000/health/ready >/dev/null; then break; fi; \
+		sleep 5; \
+	done
+	$(COMPOSE) exec api alembic upgrade head
+	$(COMPOSE) exec api python -m app.bootstrap
+	$(COMPOSE) exec api python -m app.train
+	$(COMPOSE) exec api python -m app.demo_backtests
+	@echo "Demo ready: http://localhost:3000"
+
 revision: ## Autogenerate a migration: make revision m="add instruments table"
 	cd $(BACKEND) && .venv/bin/alembic revision --autogenerate -m "$(m)"

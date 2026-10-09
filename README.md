@@ -28,7 +28,7 @@ Everything in this repository is built around that distinction.
 
 ---
 
-## Current status: Phase 7 - Walk-forward evaluation done
+## Current status: Phase 10 - Full dashboard done
 
 | Phase | Scope                                                   | Status |
 | ----- | ------------------------------------------------------- | ------ |
@@ -39,9 +39,9 @@ Everything in this repository is built around that distinction.
 | **5** | **Feature engineering (Wilder RSI/ATR, MACD signal, store, features API, feature.build task, leakage suite)** | **Done** |
 | **6** | **Baselines: majority, random, logistic regression, XGBoost (`PredictionModel`, registry, dataset builder)** | **Done** |
 | **7** | **Walk-forward evaluation (chronological folds, metrics, leakage suite)** | **Done** |
-| 8    | CEDEAR backtesting with transaction costs               | Pending |
-| 9    | Prediction API                                          | Pending |
-| 10   | Full dashboard                                          | Pending |
+| **8** | **CEDEAR backtesting with transaction costs (`app/backtesting`, benchmarks, ARS/USD metrics)** | **Done** |
+| **9** | **Prediction API (histories, prediction, models, backtests, experiments)** | **Done** |
+| **10** | **Full dashboard (search, instrument panel, probabilities, backtests)** | **Done** |
 
 Theoretical prices, premium/discount, versioned feature snapshots and their
 full provenance (ratio, FX, underlying price used) are computed and served
@@ -57,6 +57,13 @@ cd stockgambling
 cp .env.example .env
 docker compose up -d --build
 ```
+
+One-command demo with real data (Windows: `.\demo.ps1`, Unix: `make demo`):
+builds the stack, applies migrations, ingests the real CEDEAR universe with
+market prices, trains one model per symbol and horizon, and seeds backtests.
+Afterwards use `docker compose stop` / `docker compose start` (keeps the
+database and artifacts); the pytest suite truncates tables, so re-run the
+demo seed after testing.
 
 | Service                | URL                            | Purpose                          |
 | ---------------------- | ------------------------------ | -------------------------------- |
@@ -110,8 +117,11 @@ docker compose down -v     # stop and DELETE the database volume
 │   └── pyproject.toml          # deps, ruff, mypy, pytest config
 └── frontend/
     ├── app/                    # Next.js App Router
-    │   ├── page.tsx            # infrastructure status dashboard
+    │   ├── page.tsx            # home: infra status + dashboard entry points
+    │   ├── cedears/            # universe search + instrument panel
+    │   ├── backtests/          # persisted runs, equity vs benchmark
     │   └── api/health/         # web health bridge
+    ├── components/             # ui shell, SVG charts, prediction panel
     └── lib/api.ts              # typed backend client
 ```
 
@@ -212,7 +222,6 @@ These are enforced by the architecture, not left to discipline:
 
 ## Development status
 
-Nothing in this repository produces a prediction yet. When a model is eventually added it
-will be versioned, registered with its training/validation/test periods, evaluated
-walk-forward, backtested against benchmarks, and served as a probability - never as a
-certainty.
+Predictions are served as probabilities through `GET
+/api/v1/cedears/{symbol}/prediction` and rendered that way on the dashboard -
+a weak signal at best, shown next to its benchmark, never as a certainty.

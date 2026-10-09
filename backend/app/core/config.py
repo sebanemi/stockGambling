@@ -57,6 +57,11 @@ class AppSettings(BaseSettings):
         description="Comma-separated list of allowed browser origins.",
     )
 
+    artifact_dir: str = Field(
+        default="artifacts",
+        description="Directory holding fitted model artifacts (joblib).",
+    )
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _parse_cors_origins(cls, value: Any) -> Any:

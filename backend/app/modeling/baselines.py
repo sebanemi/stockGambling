@@ -60,7 +60,13 @@ class _ImputedModel(PredictionModel):
 
     def _store_medians(self, X: NDArray[np.float64]) -> NDArray[np.float64]:
         """Compute training medians (NaN-aware) and return the imputed matrix."""
-        medians = np.nanmedian(X, axis=0)
+        import warnings
+
+        with warnings.catch_warnings():
+            # An entirely-NaN column (e.g. a feature with no history yet) has
+            # no median; that is expected, not worth a RuntimeWarning per fit.
+            warnings.simplefilter("ignore", RuntimeWarning)
+            medians = np.nanmedian(X, axis=0)
         # A column that is entirely NaN has no median: fall back to 0.0 rather
         # than dropping the column, so train and evaluation shapes always agree.
         medians = np.where(np.isnan(medians), 0.0, medians)

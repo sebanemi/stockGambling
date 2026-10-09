@@ -206,10 +206,55 @@ class TestDatasetBuilder:
         """Up, up, flat(->0) and up; the dateless last snapshot is dropped."""
         inst, days = _seed_dataset(db_session)
         dataset = build_dataset(db_session, inst.id, "1.0")
+        assert dataset.horizon == "1d"
         assert dataset.market_dates == days[:4]
         assert dataset.y.tolist() == [1, 1, 0, 1]
         assert dataset.X.shape == (4, 2)
         assert dataset.feature_names == ["f1", "f2"]
+
+    def test_weekly_labels_look_five_sessions_ahead(self, db_session: Session) -> None:
+        """A 1w dataset labels each date by the close five sessions later."""
+        inst = Instrument(symbol="MODELW", instrument_type="STOCK")
+        db_session.add(inst)
+        db_session.flush()
+        days = [date(2026, 5, d) for d in range(1, 9)]
+        closes = ["100", "101", "102", "103", "104", "103", "102", "102"]
+        for day, close in zip(days, closes, strict=True):
+            write_feature_snapshot(
+                session=db_session,
+                instrument_id=inst.id,
+                as_of=datetime(day.year, day.month, day.day, 21, 0, tzinfo=UTC),
+                feature_version="1.0",
+                market_date=day,
+                feature_values={"f1": float(close)},
+            )
+            db_session.add(
+                LocalPriceBar(
+                    instrument_id=inst.id,
+                    symbol="MODELW",
+                    market_date=day,
+                    timestamp=_utc_noon(day),
+                    open=Decimal(close),
+                    high=Decimal(close),
+                    low=Decimal(close),
+                    close=Decimal(close),
+                    volume=1000,
+                    currency="ARS",
+                    source="test",
+                )
+            )
+        db_session.commit()
+        dataset = build_dataset(db_session, inst.id, "1.0", horizon="1w")
+        assert dataset.horizon == "1w"
+        # Days 1-3 see five sessions ahead (104, 103, 102 -> up, up, flat).
+        assert dataset.market_dates == days[:3]
+        assert dataset.y.tolist() == [1, 1, 0]
+
+    def test_unknown_horizon_is_refused(self, db_session: Session) -> None:
+        """A horizon outside the served set never builds a dataset."""
+        inst, _ = _seed_dataset(db_session)
+        with pytest.raises(ValueError, match="Unknown horizon"):
+            build_dataset(db_session, inst.id, "1.0", horizon="2d")
 
     def test_empty_store_is_empty_dataset(self, db_session: Session) -> None:
         """No snapshots means an empty matrix, never an exception."""
@@ -236,7 +281,7 @@ class TestModelRegistry:
     """Model rows and training runs persist and round-trip."""
 
     def test_register_get_and_list(self, db_session: Session) -> None:
-        """Registration is idempotent per name; listing filters by algorithm."""
+        """Registration is idempotent per (name, horizon); listing filters apply."""
         first = register_model(
             db_session,
             name="m1",
@@ -248,11 +293,43 @@ class TestModelRegistry:
             db_session, name="m1", algorithm="majority", feature_version="1.0", params={}
         )
         assert first.id == again.id
+        assert first.horizon == "1d"
         assert get_model(db_session, "m1") is not None
         assert get_model(db_session, "nope") is None
         register_model(db_session, name="x1", algorithm="xgboost", feature_version="1.0", params={})
-        assert [m.name for m in list_models(db_session)] == ["m1", "x1"]
+        assert [(m.name, m.horizon) for m in list_models(db_session)] == [
+            ("m1", "1d"),
+            ("x1", "1d"),
+        ]
         assert [m.name for m in list_models(db_session, algorithm="xgboost")] == ["x1"]
+
+    def test_same_name_serves_many_horizons(self, db_session: Session) -> None:
+        """One name with two horizons registers two independent rows."""
+        one_d = register_model(
+            db_session, name="multi", algorithm="majority", feature_version="1.0", params={}
+        )
+        one_w = register_model(
+            db_session,
+            name="multi",
+            algorithm="majority",
+            feature_version="1.0",
+            params={},
+            horizon="1w",
+        )
+        assert one_d.id != one_w.id
+        assert get_model(db_session, "multi", "1d") is not None
+        assert get_model(db_session, "multi", "1w") is not None
+        assert get_model(db_session, "multi", "1m") is None
+        assert [m.horizon for m in list_models(db_session, horizon="1w")] == ["1w"]
+        with pytest.raises(ValueError, match="Unknown horizon"):
+            register_model(
+                db_session,
+                name="bad",
+                algorithm="majority",
+                feature_version="1.0",
+                params={},
+                horizon="1y2",
+            )
 
     def test_record_run(self, db_session: Session) -> None:
         """A training run stores its window, size and metrics."""
