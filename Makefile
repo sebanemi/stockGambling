@@ -92,7 +92,7 @@ test-backend: ## pytest (all markers)
 	cd $(BACKEND) && .venv/bin/pytest
 
 test-unit: ## pytest, unit tests only (no PostgreSQL/Redis required)
-	cd $(BACKEND) && .venv/bin/pytest -m unit
+	cd $(BACKEND) && .venv/bin/pytest -m "unit and not integration"
 
 test-integration: ## pytest, integration tests only
 	cd $(BACKEND) && .venv/bin/pytest -m integration

@@ -34,9 +34,7 @@ TASK_NAME = JOB_NAME
     retry_backoff=True,
     retry_jitter=True,
 )
-def ingest_theoretical_prices(
-    self: object, symbols: list[str] | None = None
-) -> dict[str, object]:
+def ingest_theoretical_prices(self: object, symbols: list[str] | None = None) -> dict[str, object]:
     """Compute theoretical CEDEAR prices for the configured window.
 
     Args:
@@ -67,13 +65,9 @@ def ingest_theoretical_prices(
 
         query = select(Instrument).order_by(Instrument.symbol)
         if symbols is not None:
-            instruments = list(
-                session.scalars(query.where(Instrument.symbol.in_(symbols))).all()
-            )
+            instruments = list(session.scalars(query.where(Instrument.symbol.in_(symbols))).all())
         else:
-            instruments = list(
-                session.scalars(query.where(Instrument.is_active.is_(True))).all()
-            )
+            instruments = list(session.scalars(query.where(Instrument.is_active.is_(True))).all())
 
         report = run_theoretical_ingestion(
             session,
@@ -91,14 +85,13 @@ def _get_latest_byma_close(session: Session) -> datetime:
     price computation job.
     """
     latest = session.scalar(
-        select(LocalPriceBar.timestamp)
-        .order_by(LocalPriceBar.timestamp.desc())
-        .limit(1)
+        select(LocalPriceBar.timestamp).order_by(LocalPriceBar.timestamp.desc()).limit(1)
     )
 
     if latest is None:
         # Fallback: current time in Argentina
         from app.core.time import utc_now
+
         return utc_now()
 
     return latest

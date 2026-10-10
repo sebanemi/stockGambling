@@ -121,10 +121,19 @@ def _upsert_theoretical_bar(
             "underlying_market_date",
             "fx_market_date",
         ):
-            incoming = _quantise(getattr(result, attr)) if attr in (
-                "theoretical_price", "ratio_used", "fx_used",
-                "underlying_price_used", "local_price", "premium_discount"
-            ) else getattr(result, attr)
+            incoming = (
+                _quantise(getattr(result, attr))
+                if attr
+                in (
+                    "theoretical_price",
+                    "ratio_used",
+                    "fx_used",
+                    "underlying_price_used",
+                    "local_price",
+                    "premium_discount",
+                )
+                else getattr(result, attr)
+            )
             if getattr(existing, attr) != incoming:
                 setattr(existing, attr, incoming)
                 changed = True
@@ -148,9 +157,7 @@ def refresh_instrument_theoretical(
 
     result = build_theoretical_result(session, instrument, prediction_instant)
     if result is None:
-        tally.warnings.append(
-            f"{instrument.symbol}: missing input for theoretical price"
-        )
+        tally.warnings.append(f"{instrument.symbol}: missing input for theoretical price")
         logger.warning(
             "ingestion.theoretical_missing_input",
             symbol=instrument.symbol,
@@ -158,9 +165,7 @@ def refresh_instrument_theoretical(
         return tally
 
     market_date = to_market_date(prediction_instant)
-    _upsert_theoretical_bar(
-        session, instrument, market_date, result, source, source_ref, tally
-    )
+    _upsert_theoretical_bar(session, instrument, market_date, result, source, source_ref, tally)
 
     return tally
 

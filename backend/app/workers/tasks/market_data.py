@@ -75,9 +75,7 @@ def ingest_cedear_prices(self: object, symbols: list[str] | None = None) -> dict
         if symbols is not None:
             instruments = list(session.scalars(query.where(Instrument.symbol.in_(symbols))).all())
         else:
-            instruments = list(
-                session.scalars(query.where(Instrument.is_active.is_(True))).all()
-            )
+            instruments = list(session.scalars(query.where(Instrument.is_active.is_(True))).all())
         report = run_market_ingestion(
             session,
             instruments,
