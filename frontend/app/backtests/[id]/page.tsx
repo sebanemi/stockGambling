@@ -7,22 +7,64 @@ import { fmtArs, fmtPct, fmtSignedPct } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-const METRIC_ROWS: { key: string; label: string; format: (value: number | null) => string }[] = [
-  { key: "total_return", label: "Total return", format: fmtSignedPct },
-  { key: "annualised_return", label: "Annualised return", format: fmtSignedPct },
-  { key: "volatility", label: "Volatility (ann.)", format: fmtSignedPct },
-  { key: "sharpe", label: "Sharpe (rf = 0)", format: (v) => (v === null ? "—" : v.toFixed(2)) },
-  { key: "max_drawdown", label: "Max drawdown", format: fmtPct },
-  { key: "win_rate", label: "Win rate", format: fmtPct },
-  { key: "trade_count", label: "Closed trades", format: (v) => (v === null ? "—" : `${v}`) },
+const METRIC_ROWS: {
+  key: string;
+  label: string;
+  hint: string;
+  format: (value: number | null) => string;
+}[] = [
+  {
+    key: "total_return",
+    label: "Ganancia total",
+    hint: "Cuánto creció (o cayó) la plata de punta a punta.",
+    format: fmtSignedPct,
+  },
+  {
+    key: "annualised_return",
+    label: "Ganancia anualizada",
+    hint: "La ganancia total expresada como ritmo anual, para comparar períodos.",
+    format: fmtSignedPct,
+  },
+  {
+    key: "volatility",
+    label: "Volatilidad (anual)",
+    hint: "Cuánto se sacude el valor: más alta, más montaña rusa.",
+    format: fmtSignedPct,
+  },
+  {
+    key: "sharpe",
+    label: "Sharpe",
+    hint: "Ganancia por unidad de riesgo. Más de 1 es bueno, menos de 0 es malo.",
+    format: (v) => (v === null ? "—" : v.toFixed(2)),
+  },
+  {
+    key: "max_drawdown",
+    label: "Peor caída",
+    hint: "La peor pérdida desde un pico hasta recuperarse.",
+    format: fmtPct,
+  },
+  {
+    key: "win_rate",
+    label: "Operaciones ganadoras",
+    hint: "Qué % de las operaciones terminó ganando plata.",
+    format: fmtPct,
+  },
+  {
+    key: "trade_count",
+    label: "Operaciones cerradas",
+    hint: "Cuántas compras con su venta se completaron.",
+    format: (v) => (v === null ? "—" : `${v}`),
+  },
   {
     key: "average_trade",
-    label: "Average trade (ARS)",
+    label: "Resultado promedio (ARS)",
+    hint: "Cuánto ganó o perdió en promedio cada operación cerrada.",
     format: (v) => (v === null ? "—" : fmtArs(v)),
   },
   {
     key: "profit_factor",
-    label: "Profit factor",
+    label: "Factor de ganancia",
+    hint: "Cuánto se ganó por cada $1 perdido. Más de 1 = rentable.",
     format: (v) => (v === null ? "—" : v.toFixed(2)),
   },
 ];
@@ -37,8 +79,8 @@ export default async function BacktestDetailPage({
   if (!Number.isInteger(runId)) {
     return (
       <PageShell>
-        <Card title="Backtest">
-          <Empty message="Invalid run id." />
+        <Card title="Simulación">
+          <Empty message="Ese número de simulación no es válido." />
         </Card>
       </PageShell>
     );
@@ -48,7 +90,7 @@ export default async function BacktestDetailPage({
   if (!result.ok || !result.data) {
     return (
       <PageShell>
-        <Card title={`Backtest #${id}`}>
+        <Card title={`Simulación #${id}`}>
           <Unavailable detail={result.error} />
         </Card>
       </PageShell>
@@ -65,7 +107,7 @@ export default async function BacktestDetailPage({
       <header className="space-y-1">
         <p className="font-mono text-xs text-slate-500">
           <Link href="/backtests" className="underline underline-offset-4 hover:text-slate-800">
-            Backtests
+            Simulaciones
           </Link>{" "}
           / #{run.id}
         </p>
@@ -76,26 +118,30 @@ export default async function BacktestDetailPage({
           </span>
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          {run.n_bars} stored bars · {run.holding_period}-session epochs · initial{" "}
-          {fmtArs(Number(run.params["initial_capital"] ?? Number.NaN))} · position fraction{" "}
-          {String(run.params["position_fraction"] ?? "—")} · commission{" "}
-          {fmtPct(Number(run.params["commission_rate"] ?? Number.NaN))} · slippage{" "}
+          {run.n_bars} barras guardadas · se mantiene la posición {run.holding_period}{" "}
+          sesiones · capital inicial{" "}
+          {fmtArs(Number(run.params["initial_capital"] ?? Number.NaN))} · fracción por
+          posición {String(run.params["position_fraction"] ?? "—")} · comisión{" "}
+          {fmtPct(Number(run.params["commission_rate"] ?? Number.NaN))} · deslizamiento{" "}
           {fmtPct(Number(run.params["slippage_rate"] ?? Number.NaN))}
         </p>
       </header>
 
-      <Card title="Equity vs buy-and-hold (ARS, same bars)">
+      <Card
+        title="Tu estrategia vs comprar y mantener (ARS, mismas barras)"
+        hint="Las dos curvas usan las mismas barras, así que compararlas es honesto. Si la azul no le gana a la gris, la señal no agrega nada."
+      >
         {n < 2 ? (
-          <Empty message="Fewer than two equity points stored." />
+          <Empty message="Hay menos de dos puntos guardados para dibujar." />
         ) : (
           <LineChart
-            xLabel={`Stored bars · ${run.start_date} → ${run.end_date} (${n} points)`}
+            xLabel={`Barras guardadas · ${run.start_date} → ${run.end_date} (${n} puntos)`}
             yFormat={(value) => fmtArs(value)}
             series={[
-              { label: "Strategy", detail: "long/flat, net of costs", color: "#0284c7", points: equityPoints },
+              { label: "Estrategia", detail: "compra/espera, con costos", color: "#0284c7", points: equityPoints },
               {
-                label: "Buy-and-hold CEDEAR",
-                detail: "same window, same entry costs",
+                label: "Comprar y mantener el CEDEAR",
+                detail: "mismo período, mismos costos de entrada",
                 color: "#94a3b8",
                 points: benchPoints,
               },
@@ -103,49 +149,58 @@ export default async function BacktestDetailPage({
           />
         )}
         <p className="mt-2 text-xs text-slate-500">
-          Both curves are marked on the same stored bars, so the shared axis is honest. Costs
-          paid: {fmtArs(run.total_costs)}.
+          Costos pagados en total: {fmtArs(run.total_costs)}.
         </p>
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Strategy metrics">
+        <Card
+          title="Métricas de la estrategia"
+          hint="Pasá el ojo por la letra chica de cada métrica: ahí dice qué significa."
+        >
           <dl className="space-y-1.5 text-sm">
             {METRIC_ROWS.map((row) => (
-              <Row
-                key={row.key}
-                label={row.label}
-                value={row.format(run.metrics[row.key] ?? null)}
-              />
+              <div key={row.key}>
+                <Row label={row.label} value={row.format(run.metrics[row.key] ?? null)} />
+                <p className="text-right text-xs text-slate-400">{row.hint}</p>
+              </div>
             ))}
           </dl>
         </Card>
-        <Card title="Buy-and-hold benchmark">
+        <Card
+          title="Métricas de comprar y mantener"
+          hint="La vara a superar: ¿valió la pena operar, o convenía no tocar nada?"
+        >
           <dl className="space-y-1.5 text-sm">
             {METRIC_ROWS.map((row) => (
-              <Row
-                key={row.key}
-                label={row.label}
-                value={row.format(run.benchmark_metrics[row.key] ?? null)}
-              />
+              <div key={row.key}>
+                <Row
+                  label={row.label}
+                  value={row.format(run.benchmark_metrics[row.key] ?? null)}
+                />
+                <p className="text-right text-xs text-slate-400">{row.hint}</p>
+              </div>
             ))}
           </dl>
         </Card>
       </div>
 
-      <Card title={`Closed round-trip trades (${run.trades.length})`}>
+      <Card
+        title={`Operaciones cerradas (${run.trades.length})`}
+        hint="Cada fila es una compra con su venta. La última posición puede quedar abierta: se ve en la curva pero no se inventa como operación."
+      >
         {run.trades.length === 0 ? (
-          <Empty message="No closed round trips: the run held or stayed flat. An open tail position stays marked in the curve, never invented as a trade." />
+          <Empty message="Sin operaciones cerradas: la simulación compró y mantuvo, o se quedó quieta." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full font-mono text-xs">
               <thead>
                 <tr className="text-left text-slate-500">
-                  <th className="py-1 pr-3">Entry bar</th>
-                  <th className="py-1 pr-3">Exit bar</th>
-                  <th className="py-1 pr-3 text-right">Entry</th>
-                  <th className="py-1 pr-3 text-right">Exit</th>
-                  <th className="py-1 pr-3 text-right">P&amp;L (ARS)</th>
+                  <th className="py-1 pr-3">Entrada (barra)</th>
+                  <th className="py-1 pr-3">Salida (barra)</th>
+                  <th className="py-1 pr-3 text-right">Precio de entrada</th>
+                  <th className="py-1 pr-3 text-right">Precio de salida</th>
+                  <th className="py-1 pr-3 text-right">Resultado (ARS)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">

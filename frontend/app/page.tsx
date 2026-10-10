@@ -5,17 +5,13 @@ import { Card } from "@/components/ui";
 export const dynamic = "force-dynamic";
 
 const PIPELINE = [
-  { step: "CEDEAR metadata", phase: 2 },
-  { step: "Local CEDEAR prices", phase: 3 },
-  { step: "Underlying prices", phase: 3 },
-  { step: "USD/ARS FX", phase: 3 },
-  { step: "Theoretical CEDEAR value", phase: 4 },
-  { step: "Feature engineering", phase: 5 },
-  { step: "Baseline models", phase: 6 },
-  { step: "Walk-forward validation", phase: 7 },
-  { step: "CEDEAR backtesting", phase: 8 },
-  { step: "Prediction API", phase: 9 },
-  { step: "Dashboard", phase: 10 },
+  { step: "Datos del CEDEAR", detail: "Qué papeles existen y cuántas acciones representa cada uno (ratio de conversión)." },
+  { step: "Precios", detail: "Cotización del CEDEAR en BYMA, del activo original en EE.UU. y del dólar oficial." },
+  { step: "Valor teórico", detail: "Cuánto debería valer el CEDEAR según activo × dólar ÷ ratio." },
+  { step: "Indicadores", detail: "RSI, MACD, volatilidad y otras señales calculadas de los precios." },
+  { step: "Modelos", detail: "Algoritmos que estiman la probabilidad de que el precio suba." },
+  { step: "Validación", detail: "Se prueban en el pasado sin haber visto el futuro, para no autoengañarse." },
+  { step: "Simulaciones", detail: "Qué habría pasado operando con esas señales, con comisiones reales." },
 ] as const;
 
 type Badge = "ok" | "degraded" | "unavailable";
@@ -26,11 +22,13 @@ function StatusBadge({ status }: { status: Badge }) {
     degraded: "bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-amber-500/30",
     unavailable: "bg-red-500/15 text-red-700 dark:text-red-300 ring-red-500/30",
   };
+  const label =
+    status === "ok" ? "funcionando" : status === "degraded" ? "degradado" : "no disponible";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ${styles[status]}`}
     >
-      {status}
+      {label}
     </span>
   );
 }
@@ -55,45 +53,98 @@ export default async function HomePage() {
       <header className="space-y-3">
         <h1 className="text-3xl font-bold tracking-tight">StockGambling</h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          Research platform for predicting the <strong>next-day direction</strong> of Argentine
-          CEDEARs traded on BYMA. The target is the CEDEAR quoted in ARS &mdash; a distinct
-          instrument from its underlying foreign security, driven by the underlying price, the
-          USD/ARS rate, the conversion ratio and local market behaviour.
-        </p>
-        <p className="text-sm text-slate-500 dark:text-slate-500">
-          Research dashboard: search the CEDEAR universe, inspect actual vs theoretical prices,
-          read next-session probabilities from registered models, and compare backtests against
-          their benchmarks.
+          Plataforma de investigación para estimar hacia dónde va a moverse el precio de los
+          CEDEARs argentinos (BYMA). Ojo: el objetivo es el CEDEAR cotizado en pesos — un
+          instrumento distinto de la acción extranjera original, movido por el precio de esa
+          acción, el dólar, el ratio de conversión y el humor del mercado local.
         </p>
       </header>
+
+      <Card
+        title="Qué podés hacer acá"
+        hint="El recorrido habitual, en orden: primero mirás un papel, después qué dice el modelo, después si esa señal habría ganado plata."
+      >
+        <ol className="grid gap-2 sm:grid-cols-3">
+          {[
+            {
+              n: "1",
+              title: "Buscá un CEDEAR",
+              body: "Entrá a CEDEARs, buscá por símbolo (p. ej. AAPL) y abrí su ficha.",
+            },
+            {
+              n: "2",
+              title: "Pedí una probabilidad",
+              body: "En la ficha elegí horizonte y modelo, y mirá la chance de suba. Cerca de 50/50 = no hay señal.",
+            },
+            {
+              n: "3",
+              title: "Fijate si habría funcionado",
+              body: "En Simulaciones compará la estrategia contra simplemente haber comprado y mantenido.",
+            },
+          ].map((item) => (
+            <li
+              key={item.n}
+              className="rounded-lg bg-slate-100/70 px-3 py-2.5 text-sm dark:bg-slate-800/60"
+            >
+              <span className="font-mono text-xs text-slate-400">Paso {item.n}</span>
+              <span className="block font-semibold text-slate-800 dark:text-slate-100">
+                {item.title}
+              </span>
+              <span className="mt-0.5 block text-slate-600 dark:text-slate-300">{item.body}</span>
+            </li>
+          ))}
+        </ol>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <QuickLink
           href="/cedears"
-          title="Explore CEDEARs →"
-          body="Search instruments, see ratio history, multi-market panels and prediction probabilities."
+          title="Explorar CEDEARs →"
+          body="Buscá papeles, mirá precio real vs teórico, probabilidades por modelo y simulaciones."
         />
         <QuickLink
           href="/backtests"
-          title="Backtests →"
-          body="Strategy equity vs buy-and-hold, metrics and closed trades for persisted runs."
+          title="Ver simulaciones →"
+          body="Qué habría ganado cada estrategia contra comprar y mantener, con costos incluidos."
         />
       </div>
 
+      <Card
+        title="Cómo se cocina cada número"
+        hint="Cada probabilidad que ves pasó por estas etapas, en este orden."
+      >
+        <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {PIPELINE.map((item, i) => (
+            <li
+              key={item.step}
+              className="rounded-lg bg-slate-100/70 px-3 py-2 text-sm dark:bg-slate-800/60"
+            >
+              <span className="font-mono text-xs text-slate-400">Etapa {i + 1}</span>
+              <span className="block font-semibold text-slate-800 dark:text-slate-100">
+                {item.step}
+              </span>
+              <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">
+                {item.detail}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </Card>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card title="API service">
+        <Card title="Servicio API">
           {info.ok && info.data ? (
             <dl className="space-y-2 text-sm">
-              <Row label="Service" value={info.data.service} />
-              <Row label="Version" value={info.data.version} />
-              <Row label="Environment" value={info.data.environment} />
-              <Row label="API prefix" value={info.data.api_prefix} />
+              <Row label="Servicio" value={info.data.service} />
+              <Row label="Versión" value={info.data.version} />
+              <Row label="Entorno" value={info.data.environment} />
+              <Row label="Prefijo API" value={info.data.api_prefix} />
               <div className="pt-1">
                 <Link
                   href={`${PUBLIC_API_URL}/docs`}
                   className="text-sm font-medium text-sky-600 underline underline-offset-4 hover:text-sky-500 dark:text-sky-400"
                 >
-                  Open interactive API docs
+                  Abrir documentación interactiva de la API
                 </Link>
               </div>
             </dl>
@@ -102,7 +153,7 @@ export default async function HomePage() {
           )}
         </Card>
 
-        <Card title="Dependencies">
+        <Card title="Dependencias">
           {readiness.ok && readiness.data ? (
             <ul className="space-y-2 text-sm">
               <DependencyRow
@@ -113,7 +164,7 @@ export default async function HomePage() {
               {Object.entries(readiness.data.checks).map(([name, check]) => (
                 <DependencyRow
                   key={name}
-                  name={name}
+                  name={name === "postgres" ? "Base de datos" : name}
                   status={check.status}
                   detail={`${check.latency_ms} ms`}
                 />
@@ -125,23 +176,9 @@ export default async function HomePage() {
         </Card>
       </div>
 
-      <Card title="Canonical pipeline">
-        <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {PIPELINE.map((item) => (
-            <li
-              key={item.step}
-              className="flex items-center gap-2 rounded-lg bg-slate-100/70 px-3 py-2 text-sm dark:bg-slate-800/60"
-            >
-              <span className="font-mono text-xs text-slate-400">P{item.phase}</span>
-              <span className="text-slate-700 dark:text-slate-300">{item.step}</span>
-            </li>
-          ))}
-        </ol>
-      </Card>
-
       <footer className="mt-auto border-t border-slate-200 pt-4 text-xs text-slate-500 dark:border-slate-800">
-        Educational research software. Not investment advice. Model outputs are probabilities, never
-        certainties.
+        Software educativo de investigación. No es asesoramiento de inversión. Los modelos
+        devuelven probabilidades, nunca certezas.
       </footer>
     </main>
   );
@@ -180,7 +217,7 @@ function Unavailable({ detail }: { detail: string | null }) {
   return (
     <div className="space-y-2">
       <StatusBadge status="unavailable" />
-      <p className="font-mono text-xs break-all text-slate-500">{detail ?? "no detail"}</p>
+      <p className="font-mono text-xs break-all text-slate-500">{detail ?? "sin detalle"}</p>
     </div>
   );
 }

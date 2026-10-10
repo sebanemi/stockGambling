@@ -13,23 +13,23 @@ export interface PredictableModel {
 }
 
 const HORIZONS = [
-  { key: "1d", label: "1 day" },
-  { key: "1w", label: "1 week" },
-  { key: "1m", label: "1 month" },
-  { key: "3m", label: "3 months" },
-  { key: "6m", label: "6 months" },
-  { key: "1y", label: "1 year" },
-  { key: "2y", label: "2 years" },
+  { key: "1d", label: "1 día" },
+  { key: "1w", label: "1 semana" },
+  { key: "1m", label: "1 mes" },
+  { key: "3m", label: "3 meses" },
+  { key: "6m", label: "6 meses" },
+  { key: "1y", label: "1 año" },
+  { key: "2y", label: "2 años" },
 ] as const;
 
 /**
- * Direction probabilities for one CEDEAR over a chosen horizon.
+ * Probabilidad de suba/baja de un CEDEAR para el horizonte elegido.
  *
- * The horizon and the model are chosen by the reader; the backend serves the
- * registered (name, horizon) artifact and refuses anything else. This
- * component never computes, defaults or reshapes anything: backend refusals
- * (unknown horizon, untrained model, mismatched features) are shown verbatim
- * instead of being papered over.
+ * El horizonte y el modelo los elegís vos; el backend sirve el modelo
+ * registrado (nombre, horizonte) y rechaza cualquier otra cosa. Este
+ * componente nunca calcula, completa ni disfraza nada: los rechazos del
+ * backend (horizonte desconocido, modelo sin entrenar, indicadores
+ * incompatibles) se muestran tal cual en lugar de taparse.
  */
 export function PredictionPanel({
   symbol,
@@ -49,8 +49,8 @@ export function PredictionPanel({
   if (models.length === 0) {
     return (
       <p className="text-sm text-slate-500">
-        No registered models. Train and register one before predictions can be served; this
-        panel shows nothing rather than a default.
+        No hay modelos registrados. Hay que entrenar y registrar uno antes de poder pedir
+        predicciones; este panel prefiere no mostrar nada antes que un valor por defecto.
       </p>
     );
   }
@@ -80,7 +80,7 @@ export function PredictionPanel({
       }
       setPrediction(body as Prediction);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "unknown error");
+      setError(err instanceof Error ? err.message : "error desconocido");
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export function PredictionPanel({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Forecast horizon">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Horizonte del pronóstico">
         {HORIZONS.map((option) => (
           <button
             key={option.key}
@@ -116,12 +116,12 @@ export function PredictionPanel({
 
       {available.length === 0 ? (
         <p className="text-sm text-slate-500">
-          No registered model serves this horizon for {symbol} yet.
+          Todavía ningún modelo registrado cubre este horizonte para {symbol}.
         </p>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           <label htmlFor="model-select" className="text-sm text-slate-500">
-            Model
+            Modelo
           </label>
           <select
             id="model-select"
@@ -141,14 +141,14 @@ export function PredictionPanel({
             disabled={loading || !selected}
             className="rounded-lg bg-sky-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-50"
           >
-            {loading ? "Predicting…" : "Predict"}
+            {loading ? "Calculando…" : "Predecir"}
           </button>
         </div>
       )}
 
       {error ? (
         <p className="text-sm text-amber-700 dark:text-amber-300">
-          The backend refused: {error}
+          El backend lo rechazó: {error}
         </p>
       ) : null}
 
@@ -157,26 +157,26 @@ export function PredictionPanel({
           <p className="text-xs text-slate-500">{prediction.horizon_detail}</p>
           <ProbabilityBar up={prediction.probability_up} />
           <dl className="space-y-1.5 text-sm">
-            <ProvRow label="Horizon" value={prediction.horizon} />
+            <ProvRow label="Horizonte" value={prediction.horizon} />
             <ProvRow
-              label="Model"
+              label="Modelo"
               value={`${prediction.model.name} · ${prediction.model.algorithm}`}
             />
             <ProvRow
-              label="Feature version"
-              value={`${prediction.feature_version}${prediction.feature_version_match ? "" : ` (trained on ${prediction.model.feature_version})`}`}
+              label="Versión de indicadores"
+              value={`${prediction.feature_version}${prediction.feature_version_match ? "" : ` (entrenado con ${prediction.model.feature_version})`}`}
             />
-            <ProvRow label="Predicted at" value={prediction.as_of} />
-            <ProvRow label="Latest stored close" value={fmtArs(prediction.actual_close)} />
+            <ProvRow label="Calculado el" value={prediction.as_of} />
+            <ProvRow label="Último cierre guardado" value={fmtArs(prediction.actual_close)} />
             <ProvRow
-              label="Ratio in force"
-              value={prediction.current_ratio_formatted ?? "unknown"}
+              label="Ratio vigente"
+              value={prediction.current_ratio_formatted ?? "desconocido"}
             />
           </dl>
           {!prediction.feature_version_match ? (
             <p className="text-xs text-amber-700 dark:text-amber-300">
-              Warning: live features differ from the training version. Treat this probability
-              with extra scepticism.
+              Atención: los indicadores actuales difieren de los usados en el entrenamiento.
+              Tomá esta probabilidad con pinzas.
             </p>
           ) : null}
         </div>
@@ -184,8 +184,9 @@ export function PredictionPanel({
         !error &&
         available.length > 0 && (
           <p className="text-sm text-slate-500">
-            Choose a horizon and a model, then press Predict. The backend computes live
-            features from stored bars and answers with a probability - never a certainty.
+            Elegí un horizonte y un modelo, y apretá Predecir. El backend calcula los
+            indicadores con las barras guardadas y responde con una probabilidad - nunca una
+            certeza.
           </p>
         )
       )}

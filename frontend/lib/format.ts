@@ -1,8 +1,8 @@
 /**
- * Number and probability formatting for the dashboard.
+ * Formato de números y probabilidades para el panel.
  *
- * Formatting is display-only: raw API values are never rounded before they
- * are compared or plotted, only when they are rendered as text.
+ * El formato es solo visual: los valores crudos de la API nunca se redondean
+ * antes de compararse o graficarse, solo al mostrarse como texto.
  */
 
 const arsFormat = new Intl.NumberFormat("es-AR", {
@@ -20,7 +20,7 @@ const percentFormat = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
-/** Format an ARS amount, or an em dash when unknown. */
+/** Formatea un monto en ARS, o una raya si se desconoce. */
 export function fmtArs(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   const numeric = typeof value === "string" ? Number(value) : value;
@@ -28,7 +28,7 @@ export function fmtArs(value: string | number | null | undefined): string {
   return arsFormat.format(numeric);
 }
 
-/** Format a ratio string (e.g. "0.083333") compactly, or an em dash. */
+/** Formatea un ratio (p. ej. "0.083333") en forma compacta, o una raya. */
 export function fmtCompact(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   const numeric = typeof value === "string" ? Number(value) : value;
@@ -36,13 +36,13 @@ export function fmtCompact(value: string | number | null | undefined): string {
   return compactFormat.format(numeric);
 }
 
-/** Format a fraction (0.53) as a percentage ("53.0%"), or an em dash. */
+/** Formatea una fracción (0.53) como porcentaje ("53,0 %"), o una raya. */
 export function fmtPct(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return "—";
   return percentFormat.format(value);
 }
 
-/** Format a signed fraction as a percentage ("+2.1%" / "-0.4%"). */
+/** Formatea una fracción con signo como porcentaje ("+2,1 %" / "-0,4 %"). */
 export function fmtSignedPct(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return "—";
   const sign = value > 0 ? "+" : "";

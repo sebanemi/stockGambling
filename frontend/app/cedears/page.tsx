@@ -19,8 +19,8 @@ export default async function CedearsPage({
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">CEDEARs</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Search the stored CEDEAR universe. Only instruments the metadata ingestion job has
-          stored appear here; a newly listed CEDEAR shows up without a code change.
+          Buscá en el universo de CEDEARs guardado. Acá aparecen solo los papeles que el
+          sistema ya importó; si sale uno nuevo a cotizar, aparece solo sin tocar código.
         </p>
       </header>
 
@@ -28,26 +28,29 @@ export default async function CedearsPage({
         <input
           name="q"
           defaultValue={query}
-          placeholder="Search by symbol, name or underlying (e.g. AAPL)"
+          placeholder="Buscá por símbolo, nombre o activo original (p. ej. AAPL)"
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
         />
         <button
           type="submit"
           className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500"
         >
-          Search
+          Buscar
         </button>
       </form>
 
-      <Card title={query ? `Results for "${query}"` : "Browse the universe"}>
+      <Card
+        title={query ? `Resultados para "${query}"` : "Explorar el universo"}
+        hint="Tocá un símbolo para abrir su ficha: precios, probabilidad del modelo y simulaciones."
+      >
         {!result.ok || !result.data ? (
           <Unavailable detail={result.error} />
         ) : result.data.items.length === 0 ? (
-          <Empty message="No instruments match. The universe is whatever ingestion stored." />
+          <Empty message="Nada coincide. El universo es lo que se haya importado hasta ahora." />
         ) : (
           <div>
             <p className="mb-2 text-xs text-slate-500">
-              {result.data.total} match{result.data.total === 1 ? "" : "es"}
+              {result.data.total} coincidencia{result.data.total === 1 ? "" : "s"}
             </p>
             <ul className="divide-y divide-slate-200 dark:divide-slate-800">
               {result.data.items.map((item) => (
@@ -66,7 +69,7 @@ export default async function CedearsPage({
                     </p>
                   </div>
                   <span className="font-mono text-xs text-slate-500">
-                    {item.current_ratio_formatted ?? "ratio unknown"}
+                    {item.current_ratio_formatted ?? "ratio desconocido"}
                   </span>
                 </li>
               ))}

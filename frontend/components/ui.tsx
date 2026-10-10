@@ -1,12 +1,21 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-export function Card({ title, children }: { title: string; children: ReactNode }) {
+export function Card({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white/70 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
-      <h2 className="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+      <h2 className="mb-1 text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
         {title}
       </h2>
+      {hint ? <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{hint}</p> : null}
       {children}
     </section>
   );
@@ -24,7 +33,7 @@ export function TopNav() {
         CEDEARs
       </Link>
       <Link href="/backtests" className={link}>
-        Backtests
+        Simulaciones
       </Link>
     </nav>
   );
@@ -36,8 +45,8 @@ export function PageShell({ children }: { children: ReactNode }) {
       <TopNav />
       {children}
       <footer className="mt-auto border-t border-slate-200 pt-4 text-xs text-slate-500 dark:border-slate-800">
-        Educational research software. Not investment advice. Model outputs are probabilities,
-        never certainties.
+        Software educativo de investigación. No es asesoramiento de inversión. Los modelos
+        devuelven probabilidades, nunca certezas.
       </footer>
     </main>
   );
@@ -49,10 +58,10 @@ export function Unavailable({ detail }: { detail: string | null }) {
       <span className="inline-flex items-center rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs font-medium text-red-700 ring-1 ring-red-500/30 dark:text-red-300">
         unavailable
       </span>
-      <p className="font-mono text-xs break-all text-slate-500">{detail ?? "no detail"}</p>
+      <p className="font-mono text-xs break-all text-slate-500">{detail ?? "sin detalle"}</p>
       <p className="text-sm text-slate-500">
-        The backend did not answer. Start it with <code>docker compose up</code> and retry; this
-        panel shows nothing rather than a guess.
+        El backend no respondió. Levantalo con <code>docker compose up</code> e intentá de
+        nuevo; este panel prefiere no mostrar nada antes que inventar un dato.
       </p>
     </div>
   );

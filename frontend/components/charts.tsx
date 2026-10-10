@@ -1,15 +1,16 @@
 /**
- * Honest SVG charts for the dashboard.
+ * Gráficos SVG honestos para el panel.
  *
- * Two rules from the methodology shape every chart here:
+ * Dos reglas de la metodología dan forma a cada gráfico:
  *
- * 1. A BYMA session and a foreign-market session are different days. Series
- *    from different markets are rendered as small multiples with their own
- *    market-date axes - never overlaid on a shared x-axis that would imply
- *    simultaneity. Series that share one market calendar (actual vs
- *    theoretical CEDEAR, strategy vs buy-and-hold over the same bars) may
- *    share an axis, and say so.
- * 2. Missing sessions are gaps, not zeroes: only stored points are plotted.
+ * 1. Una sesión de BYMA y una sesión del mercado extranjero son días
+ *    distintos. Las series de mercados diferentes se dibujan como paneles
+ *    separados, cada uno con su propio eje de fechas - nunca superpuestas en
+ *    un eje compartido que sugeriría simultaneidad. Las series que comparten
+ *    un calendario (precio real vs teórico del CEDEAR, estrategia vs
+ *    buy-and-hold sobre las mismas barras) sí pueden compartir eje, y lo dicen.
+ * 2. Las sesiones faltantes son huecos, no ceros: solo se dibujan los puntos
+ *    guardados.
  */
 
 export interface ChartPoint {
@@ -67,10 +68,10 @@ function pathFor(
 }
 
 /**
- * One line chart with its own x-axis of market dates.
+ * Un gráfico de líneas con su propio eje x de fechas de mercado.
  *
- * `xLabel` names the calendar (e.g. "BYMA sessions"), so a reader can never
- * mistake which market the dates belong to.
+ * `xLabel` nombra el calendario (p. ej. "sesiones BYMA"), para que nadie
+ * confunda a qué mercado pertenecen las fechas.
  */
 export function LineChart({
   series,
@@ -152,30 +153,34 @@ export function LineChart({
 }
 
 /**
- * Up/down probability rendered as a bar - with the honest framing that a
- * weak signal is barely better than a coin.
+ * Probabilidad de suba/baja dibujada como barra - aclarando que una señal
+ * débil apenas supera a una moneda.
  */
 export function ProbabilityBar({ up }: { up: number }) {
   const down = 1 - up;
   const verdict =
-    up >= 0.6
-      ? "Leaning up - still a probability, not a call."
-      : up <= 0.4
-        ? "Leaning down - still a probability, not a call."
-        : "Close to a coin flip: no meaningful edge.";
+    up >= 0.65
+      ? "Señal fuerte a favor de la suba - igual es una probabilidad, no una orden de compra."
+      : up >= 0.55
+        ? "Señal débil a favor de la suba - apenas mejor que una moneda."
+        : up > 0.45
+          ? "Casi un 50/50: no hay señal aprovechable."
+          : up > 0.35
+            ? "Señal débil a favor de la baja - apenas mejor que una moneda."
+            : "Señal fuerte a favor de la baja - igual es una probabilidad, no una orden de venta.";
   return (
     <div>
       <div
         className="flex h-6 w-full overflow-hidden rounded-lg ring-1 ring-slate-300 dark:ring-slate-700"
         role="img"
-        aria-label={`Probability up ${(up * 100).toFixed(1)} percent, down ${(down * 100).toFixed(1)} percent`}
+        aria-label={`Probabilidad de suba ${(up * 100).toFixed(1)} por ciento, de baja ${(down * 100).toFixed(1)} por ciento`}
       >
         <div className="bg-emerald-500/80" style={{ width: `${(up * 100).toFixed(1)}%` }} />
         <div className="bg-rose-500/80" style={{ width: `${(down * 100).toFixed(1)}%` }} />
       </div>
       <div className="mt-1.5 flex justify-between font-mono text-sm">
-        <span className="text-emerald-700 dark:text-emerald-300">up {(up * 100).toFixed(1)}%</span>
-        <span className="text-rose-700 dark:text-rose-300">down {(down * 100).toFixed(1)}%</span>
+        <span className="text-emerald-700 dark:text-emerald-300">suba {(up * 100).toFixed(1)}%</span>
+        <span className="text-rose-700 dark:text-rose-300">baja {(down * 100).toFixed(1)}%</span>
       </div>
       <p className="mt-1 text-xs text-slate-500">{verdict}</p>
     </div>
